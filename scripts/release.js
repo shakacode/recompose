@@ -47,13 +47,15 @@ try {
     )
   }
 
+  const qualifiedPackageName = `@shakacode/${packageName}`
+
   const libraryName = pascalCase(packageName)
 
   const versionLoc = path.resolve(PACKAGES_SRC_DIR, packageName, 'VERSION')
   const version = fs.readFileSync(versionLoc, 'utf8').trim()
 
   let nextVersion = readline.question(
-    `Next version of ${packageName} (current version is ${version}): `
+    `Next version of ${qualifiedPackageName} (current version is ${version}): `
   )
 
   while (
@@ -105,7 +107,7 @@ try {
 
   log('Generating package.json...')
   const packageConfig = Object.assign(
-    { name: packageName, version: nextVersion },
+    { name: qualifiedPackageName, version: nextVersion },
     require(BASE_PACKAGE_LOC),
     require(path.resolve(sourceDir, 'package.json'))
   )
@@ -131,19 +133,21 @@ try {
     path.resolve(outDir, 'dist', `${libraryName}.cjs.js.flow`)
   )
 
-  log(`About to publish ${packageName}@${nextVersion} to npm.`)
+  log(`About to publish ${qualifiedPackageName}@${nextVersion} to npm.`)
   if (!readline.keyInYN('Sound good? ')) {
     log('OK. Stopping release.')
     exit(0)
   }
 
   log('Publishing...')
-  if (exec(`cd ${outDir} && npm publish`).code !== 0) {
+  if (exec(`cd ${outDir} && npm publish --access public `).code !== 0) {
     logError('Publish failed. Aborting release.')
     exit(1)
   }
 
-  logSuccess(`${packageName}@${nextVersion} was successfully published.`)
+  logSuccess(
+    `${qualifiedPackageName}@${nextVersion} was successfully published.`
+  )
 
   log('Updating VERSION file...')
   writeFile(versionLoc, `${nextVersion}\n`)
