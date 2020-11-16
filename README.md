@@ -1,6 +1,10 @@
-## A Note from the Author (acdlite, Oct 25 2018):
+## This is a forked project
 
-Hi! I created Recompose about three years ago. About a year after that, I joined the React team. Today, we announced a proposal for [*Hooks*](https://reactjs.org/hooks). Hooks solves all the problems I attempted to address with Recompose three years ago, and more on top of that. I will be discontinuing active maintenance of this package (excluding perhaps bugfixes or patches for compatibility with future React releases), and recommending that people use Hooks instead. **Your existing code with Recompose will still work**, just don't expect any new features. Thank you so, so much to [@wuct](https://github.com/wuct) and [@istarkov](https://github.com/istarkov) for their heroic work maintaining Recompose over the last few years.
+This is a fork of the original [recompose](https://github.com/acdlite/recompose/releases) project, with updated dependencies. Maintenance on the original project stopped in October, 2018.
+
+## A Note from the original author (acdlite, Oct 25 2018):
+
+Hi! I created Recompose about three years ago. About a year after that, I joined the React team. Today, we announced a proposal for [_Hooks_](https://reactjs.org/hooks). Hooks solves all the problems I attempted to address with Recompose three years ago, and more on top of that. I will be discontinuing active maintenance of this package (excluding perhaps bugfixes or patches for compatibility with future React releases), and recommending that people use Hooks instead. **Your existing code with Recompose will still work**, just don't expect any new features. Thank you so, so much to [@wuct](https://github.com/wuct) and [@istarkov](https://github.com/istarkov) for their heroic work maintaining Recompose over the last few years.
 
 Read more discussion about this decision [here](https://github.com/acdlite/recompose/issues/756#issuecomment-438674573).
 
@@ -303,17 +307,17 @@ const enhance = compose(
 )
 ```
 
-
 ## Who uses Recompose
+
 If your company or project uses Recompose, feel free to add it to [the official list of users](https://github.com/acdlite/recompose/wiki/Sites-Using-Recompose) by [editing](https://github.com/acdlite/recompose/wiki/Sites-Using-Recompose/_edit) the wiki page.
 
 ## Recipes for Inspiration
+
 We have a community-driven Recipes page. It's a place to share and see recompose patterns for inspiration. Please add to it! [Recipes](https://github.com/acdlite/recompose/wiki/Recipes).
 
 ## Feedback wanted
 
 Project is still in the early stages. Please file an issue or submit a PR if you have suggestions! Or ping me (Andrew Clark) on [Twitter](https://twitter.com/acdlite).
-
 
 ## Getting Help
 
