@@ -1,19 +1,15 @@
-## A Note from the Author (acdlite, Oct 25 2018):
+## @shakacode/recompose
 
-Hi! I created Recompose about three years ago. About a year after that, I joined the React team. Today, we announced a proposal for [*Hooks*](https://reactjs.org/hooks). Hooks solves all the problems I attempted to address with Recompose three years ago, and more on top of that. I will be discontinuing active maintenance of this package (excluding perhaps bugfixes or patches for compatibility with future React releases), and recommending that people use Hooks instead. **Your existing code with Recompose will still work**, just don't expect any new features. Thank you so, so much to [@wuct](https://github.com/wuct) and [@istarkov](https://github.com/istarkov) for their heroic work maintaining Recompose over the last few years.
+[![npm version](https://img.shields.io/npm/v/@shakacode/recompose?style=flat-square)](https://www.npmjs.com/package/@shakacode/recompose)
+[![npm downloads](https://img.shields.io/npm/dm/@shakacode/recompose?style=flat-square)](https://www.npmjs.com/package/@shakacode/recompose)
 
-Read more discussion about this decision [here](https://github.com/acdlite/recompose/issues/756#issuecomment-438674573).
+The project is a fork of [Recompose](https://github.com/acdlite/recompose/) which was created in 2018. About a year after that, the project was no longer actively maintained. While optimizing the performance of client’s React on Rails Pro installation, [ShakaCode](https://www.shakacode.com/) discovered the usage of multiple versions of [core-js](https://www.npmjs.com/package/core-js). The dependency tree revealed it was due to the presence of [fbjs@0.8.17](https://github.com/facebook/fbjs) as peer dependency which used an older version of [core-js](https://www.npmjs.com/package/core-js) i.e `v1.2.7 `.
 
-***
+[fbjs](https://github.com/facebook/fbjs) was one of the core dependencies for the last npm release of [Recompose](https://github.com/acdlite/recompose/) i.e [![npm version](https://img.shields.io/npm/v/recompose.svg?style=flat-square)](https://www.npmjs.com/package/recompose). The [Recompose](https://github.com/acdlite/recompose/) project was updated to remove the usage of [fbjs](https://github.com/facebook/fbjs), but it was never published to npm. The fork removes `fbjs` as dependency and updates `@babel/runtime`, `react-lifecycles-compat`, `symbol-observable` and `hoist-non-react-statics` packages to latest versions.
+
 
 Recompose
 -----
-
-[![build status](https://img.shields.io/travis/acdlite/recompose/master.svg?style=flat-square)](https://travis-ci.org/acdlite/recompose)
-[![coverage](https://img.shields.io/codecov/c/github/acdlite/recompose.svg?style=flat-square)](https://codecov.io/github/acdlite/recompose)
-[![code climate](https://img.shields.io/codeclimate/github/acdlite/recompose.svg?style=flat-square)](https://codeclimate.com/github/acdlite/recompose)
-[![npm version](https://img.shields.io/npm/v/recompose.svg?style=flat-square)](https://www.npmjs.com/package/recompose)
-[![npm downloads](https://img.shields.io/npm/dm/recompose.svg?style=flat-square)](https://www.npmjs.com/package/recompose)
 
 Recompose is a React utility belt for function components and higher-order components. Think of it like lodash for React.
 
