@@ -1,5 +1,4 @@
 import { createElement, Component } from 'react'
-import { polyfill } from 'react-lifecycles-compat'
 import pick from './utils/pick'
 import shallowEqual from './shallowEqual'
 import setDisplayName from './setDisplayName'
@@ -41,8 +40,6 @@ const withPropsOnChange = (shouldMapOrKeys, propsMapper) => BaseComponent => {
       })
     }
   }
-
-  polyfill(WithPropsOnChange)
 
   if (process.env.NODE_ENV !== 'production') {
     return setDisplayName(wrapDisplayName(BaseComponent, 'withPropsOnChange'))(

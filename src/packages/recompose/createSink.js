@@ -1,5 +1,4 @@
 import { Component } from 'react'
-import { polyfill } from 'react-lifecycles-compat'
 
 const createSink = callback => {
   class Sink extends Component {
@@ -15,7 +14,6 @@ const createSink = callback => {
     }
   }
 
-  polyfill(Sink)
   return Sink
 }
 

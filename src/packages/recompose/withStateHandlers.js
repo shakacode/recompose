@@ -12,12 +12,6 @@ const withStateHandlers = (initialState, stateUpdaters) => BaseComponent => {
     stateUpdaters = mapValues(
       stateUpdaters,
       handler => (mayBeEvent, ...args) => {
-        // Having that functional form of setState can be called async
-        // we need to persist SyntheticEvent
-        if (mayBeEvent && typeof mayBeEvent.persist === 'function') {
-          mayBeEvent.persist()
-        }
-
         this.setState((state, props) =>
           handler(state, props)(mayBeEvent, ...args)
         )

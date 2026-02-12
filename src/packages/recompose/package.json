@@ -16,7 +16,6 @@
     "@babel/runtime": "^7.22.0",
     "change-emitter": "^0.1.2",
     "hoist-non-react-statics": "^3.3.2",
-    "react-lifecycles-compat": "^3.0.4",
     "symbol-observable": "^3.0.0"
   },
   "peerDependencies": {

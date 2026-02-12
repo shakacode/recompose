@@ -2,7 +2,7 @@ import React from 'react'
 import { render, act } from '@testing-library/react'
 import { compose, withStateHandlers } from '../'
 
-test('withStateHandlers should persist events passed as argument', () => {
+test('withStateHandlers handles events passed as argument', () => {
   const component = jest.fn(() => null)
 
   const InputComponent = withStateHandlers(
@@ -17,17 +17,10 @@ test('withStateHandlers should persist events passed as argument', () => {
   render(<InputComponent />)
   const { onChange } = component.mock.lastCall[0]
 
-  // Call with an event-like object that has persist (like React 16 SyntheticEvent)
   act(() => {
-    onChange({ target: { value: 'Yay' }, persist: () => {} })
+    onChange({ target: { value: 'Yay' } })
   })
   expect(component.mock.lastCall[0].value).toBe('Yay')
-
-  // Call without persist method
-  act(() => {
-    onChange({ target: { value: 'empty' } })
-  })
-  expect(component.mock.lastCall[0].value).toBe('empty')
 })
 
 test('withStateHandlers adds a stateful value and a function for updating it', () => {
