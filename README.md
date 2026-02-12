@@ -7,6 +7,7 @@ The project is a fork of [Recompose](https://github.com/acdlite/recompose/) whic
 
 [fbjs](https://github.com/facebook/fbjs) was one of the core dependencies for the last npm release of [Recompose](https://github.com/acdlite/recompose/) i.e [![npm version](https://img.shields.io/npm/v/recompose.svg?style=flat-square)](https://www.npmjs.com/package/recompose). The [Recompose](https://github.com/acdlite/recompose/) project was updated to remove the usage of [fbjs](https://github.com/facebook/fbjs), but it was never published to npm. The fork removes `fbjs` as dependency and updates `@babel/runtime`, `react-lifecycles-compat`, `symbol-observable` and `hoist-non-react-statics` packages to latest versions.
 
+Use `"@shakacode/recompose": "^0.31.0"` for React 17-19, `"@shakacode/recompose": "^0.30.3"` for earlier React versions.
 
 Recompose
 -----
