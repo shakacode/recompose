@@ -9,12 +9,7 @@ test('toRenderProps creates a component from defaultProps HOC', () => {
   expect(Enhanced.displayName).toBe('defaultProps(RenderPropsComponent)')
 
   const { container } = render(
-    <Enhanced>
-      {({ foo }) =>
-        <h1>
-          {foo}
-        </h1>}
-    </Enhanced>
+    <Enhanced>{({ foo }) => <h1>{foo}</h1>}</Enhanced>
   )
 
   const h1 = container.querySelector('h1')

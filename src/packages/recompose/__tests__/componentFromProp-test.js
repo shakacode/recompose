@@ -6,10 +6,7 @@ test('componentFromProp creates a component that takes a component as a prop and
   const Container = componentFromProp('component')
   expect(Container.displayName).toBe('componentFromProp(component)')
 
-  const Component = ({ pass }) =>
-    <div>
-      Pass: {pass}
-    </div>
+  const Component = ({ pass }) => <div>Pass: {pass}</div>
 
   const { container } = render(
     <Container component={Component} pass="through" />

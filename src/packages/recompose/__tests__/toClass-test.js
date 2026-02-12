@@ -60,11 +60,12 @@ test('toClass passes context and props correctly', () => {
     withContext({ store: PropTypes.object }, props => ({ store: props.store }))
   )(Provider)
 
-  const StatelessComponent = props =>
+  const StatelessComponent = props => (
     <div
       data-fizz={props.fizz}
       data-has-store={props.store === store ? 'yes' : 'no'}
     />
+  )
 
   const TestComponent = compose(
     getContext({ store: PropTypes.object }),
