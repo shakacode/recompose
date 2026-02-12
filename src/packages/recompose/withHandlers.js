@@ -1,11 +1,10 @@
 /* eslint-disable no-console */
-import { createFactory, Component } from 'react'
+import { createElement, Component } from 'react'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
 import mapValues from './utils/mapValues'
 
 const withHandlers = handlers => BaseComponent => {
-  const factory = createFactory(BaseComponent)
   class WithHandlers extends Component {
     handlers = mapValues(
       typeof handlers === 'function' ? handlers(this.props) : handlers,
@@ -28,7 +27,7 @@ const withHandlers = handlers => BaseComponent => {
     )
 
     render() {
-      return factory({
+      return createElement(BaseComponent, {
         ...this.props,
         ...this.handlers,
       })

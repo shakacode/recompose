@@ -1,16 +1,15 @@
-import { createFactory, Component } from 'react'
+import { createElement, Component } from 'react'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
 
 const shouldUpdate = test => BaseComponent => {
-  const factory = createFactory(BaseComponent)
   class ShouldUpdate extends Component {
     shouldComponentUpdate(nextProps) {
       return test(this.props, nextProps)
     }
 
     render() {
-      return factory(this.props)
+      return createElement(BaseComponent, this.props)
     }
   }
 

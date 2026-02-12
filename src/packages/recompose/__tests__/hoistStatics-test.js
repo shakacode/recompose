@@ -22,7 +22,7 @@ test('does not copy blacklisted static properties to new component ', () => {
   BaseComponent.bar = () => {}
 
   const EnhancedComponent = hoistStatics(
-    comp => React.createFactory(comp),
+    comp => props => React.createElement(comp, props),
     { bar: true } // Blacklist
   )(BaseComponent)
 

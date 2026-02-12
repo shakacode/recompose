@@ -1,10 +1,9 @@
-import { createFactory } from 'react'
+import { createElement } from 'react'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
 
 const defaultProps = props => BaseComponent => {
-  const factory = createFactory(BaseComponent)
-  const DefaultProps = ownerProps => factory(ownerProps)
+  const DefaultProps = ownerProps => createElement(BaseComponent, ownerProps)
   DefaultProps.defaultProps = props
   if (process.env.NODE_ENV !== 'production') {
     return setDisplayName(wrapDisplayName(BaseComponent, 'defaultProps'))(
