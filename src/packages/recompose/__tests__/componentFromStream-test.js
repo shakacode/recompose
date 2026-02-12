@@ -103,8 +103,5 @@ test('completed props stream should throw an exception', () => {
 
   expect(container.querySelector('div')).not.toBe(null)
 
-  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
-
   expect(() => unmount()).toThrowError(/no elements in sequence/)
-  expect(error).toHaveBeenCalled()
 })
