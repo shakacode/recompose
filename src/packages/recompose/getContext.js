@@ -1,22 +1,26 @@
 import { createElement } from 'react'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
+import { getOrCreateContext } from './utils/contextStore'
 
 const getContext = contextTypes => BaseComponent => {
-  const GetContext = (ownerProps, context) =>
-    createElement(BaseComponent, {
-      ...ownerProps,
-      ...context,
-    })
+  const contextKeys = Object.keys(contextTypes)
 
-  GetContext.contextTypes = contextTypes
+  // Build a chain of Consumer wrappers
+  let Wrapped = BaseComponent
+  contextKeys.forEach(key => {
+    const Ctx = getOrCreateContext(key)
+    const Prev = Wrapped
+    Wrapped = props =>
+      createElement(Ctx.Consumer, null, value =>
+        createElement(Prev, { ...props, [key]: value })
+      )
+  })
 
   if (process.env.NODE_ENV !== 'production') {
-    return setDisplayName(wrapDisplayName(BaseComponent, 'getContext'))(
-      GetContext
-    )
+    return setDisplayName(wrapDisplayName(BaseComponent, 'getContext'))(Wrapped)
   }
-  return GetContext
+  return Wrapped
 }
 
 export default getContext

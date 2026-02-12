@@ -1,17 +1,24 @@
-import { createElement, Component } from 'react'
+import { createElement } from 'react'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
+import { getOrCreateContext } from './utils/contextStore'
 
 const withContext = (childContextTypes, getChildContext) => BaseComponent => {
-  class WithContext extends Component {
-    getChildContext = () => getChildContext(this.props)
+  const contextKeys = Object.keys(childContextTypes)
 
-    render() {
-      return createElement(BaseComponent, this.props)
-    }
+  const WithContext = props => {
+    const contextValues = getChildContext(props)
+    let element = createElement(BaseComponent, props)
+    contextKeys.forEach(key => {
+      const Ctx = getOrCreateContext(key)
+      element = createElement(
+        Ctx.Provider,
+        { value: contextValues[key] },
+        element
+      )
+    })
+    return element
   }
-
-  WithContext.childContextTypes = childContextTypes
 
   if (process.env.NODE_ENV !== 'production') {
     return setDisplayName(wrapDisplayName(BaseComponent, 'withContext'))(

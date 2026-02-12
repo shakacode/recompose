@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { render } from '@testing-library/react'
-import { toClass, withContext, compose } from '../'
+import { toClass, withContext, getContext, compose } from '../'
 
 test('toClass returns the base component if it is already a class', () => {
   class BaseComponent extends React.Component {
@@ -14,19 +14,17 @@ test('toClass returns the base component if it is already a class', () => {
   expect(TestComponent).toBe(BaseComponent)
 })
 
-test('toClass copies propTypes, displayName, contextTypes and defaultProps from base component', () => {
+test('toClass copies propTypes, displayName and defaultProps from base component', () => {
   const StatelessComponent = () => <div />
 
   StatelessComponent.displayName = 'Stateless'
   StatelessComponent.propTypes = { foo: PropTypes.string }
-  StatelessComponent.contextTypes = { bar: PropTypes.object }
   StatelessComponent.defaultProps = { foo: 'bar', fizz: 'buzz' }
 
   const TestComponent = toClass(StatelessComponent)
 
   expect(TestComponent.displayName).toBe('Stateless')
   expect(TestComponent.propTypes).toEqual({ foo: PropTypes.string })
-  expect(TestComponent.contextTypes).toEqual({ bar: PropTypes.object })
   expect(TestComponent.defaultProps).toEqual({ foo: 'bar', fizz: 'buzz' })
 })
 
@@ -62,15 +60,16 @@ test('toClass passes context and props correctly', () => {
     withContext({ store: PropTypes.object }, props => ({ store: props.store }))
   )(Provider)
 
-  const StatelessComponent = (props, context) =>
+  const StatelessComponent = props =>
     <div
       data-fizz={props.fizz}
-      data-has-store={context.store === store ? 'yes' : 'no'}
+      data-has-store={props.store === store ? 'yes' : 'no'}
     />
 
-  StatelessComponent.contextTypes = { store: PropTypes.object }
-
-  const TestComponent = toClass(StatelessComponent)
+  const TestComponent = compose(
+    getContext({ store: PropTypes.object }),
+    toClass
+  )(StatelessComponent)
 
   const { container } = render(
     <Provider store={store}>
