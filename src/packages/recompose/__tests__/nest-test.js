@@ -15,6 +15,8 @@ test('nest nests components from outer to inner', () => {
   // nest(A,B,C) creates nested divs, all with pass="through"
   const divs = container.querySelectorAll('div')
   expect(divs.length).toBe(3)
-  divs.forEach(div => expect(div.getAttribute('pass')).toBe('through'))
+  divs.forEach(div => {
+    expect(div.getAttribute('pass')).toBe('through')
+  })
   expect(container.textContent).toBe('Child')
 })

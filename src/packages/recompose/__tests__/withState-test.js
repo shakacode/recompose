@@ -56,6 +56,7 @@ test('withState accepts setState() callback', () => {
   act(() => {
     updateCounter(18, callback)
   })
+  expect(callback).toHaveBeenCalledTimes(1)
 })
 
 test('withState also accepts initialState as function of props', () => {

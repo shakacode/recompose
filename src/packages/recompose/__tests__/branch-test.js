@@ -60,5 +60,5 @@ test('branch third argument should not cause console error', () => {
 
   render(<BranchedComponent />)
 
-  expect(console.error.mock.calls.length > 0).toBe(false)
+  expect(console.error).not.toHaveBeenCalled()
 })

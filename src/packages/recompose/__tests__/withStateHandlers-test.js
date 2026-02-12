@@ -86,7 +86,7 @@ test('withStateHandlers initial state must be function or object or null or unde
   const Counter = withStateHandlers(1, {})(component)
   jest.spyOn(console, 'error').mockImplementation(() => {})
   render(<Counter />)
-  expect(console.error.mock.calls.length > 0).toBe(true)
+  expect(console.error).toHaveBeenCalled()
 })
 
 test('withStateHandlers have access to props', () => {

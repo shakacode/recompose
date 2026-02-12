@@ -67,7 +67,7 @@ test('withHandlers warns if handler is not a higher-order function', () => {
 
   const { container } = render(<Button />)
 
-  // React 16 dev mode re-throws errors from event handlers via
+  // React dev mode re-throws errors from event handlers via
   // invokeGuardedCallbackDev, causing an uncaught error in jsdom.
   // Suppress it so we can check the console.error warning instead.
   const onError = event => event.preventDefault()
