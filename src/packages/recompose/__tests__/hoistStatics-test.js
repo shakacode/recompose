@@ -1,10 +1,9 @@
-import React, { createFactory } from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import React from 'react'
+import { render } from '@testing-library/react'
 import { hoistStatics, mapProps } from '../'
 
 test('copies non-React static properties from base component to new component', () => {
-  const BaseComponent = sinon.spy(() => null)
+  const BaseComponent = jest.fn(() => null)
   BaseComponent.foo = () => {}
 
   const EnhancedComponent = hoistStatics(
@@ -13,17 +12,17 @@ test('copies non-React static properties from base component to new component', 
 
   expect(EnhancedComponent.foo).toBe(BaseComponent.foo)
 
-  mount(<EnhancedComponent n={3} />)
-  expect(BaseComponent.firstCall.args[0].n).toBe(15)
+  render(<EnhancedComponent n={3} />)
+  expect(BaseComponent.mock.lastCall[0].n).toBe(15)
 })
 
 test('does not copy blacklisted static properties to new component ', () => {
-  const BaseComponent = sinon.spy(() => null)
+  const BaseComponent = () => null
   BaseComponent.foo = () => {}
   BaseComponent.bar = () => {}
 
   const EnhancedComponent = hoistStatics(
-    comp => createFactory(comp),
+    comp => React.createFactory(comp),
     { bar: true } // Blacklist
   )(BaseComponent)
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render } from '@testing-library/react'
 import setObservableConfig from '../setObservableConfig'
 import rxjs4Config from '../rxjs4ObservableConfig'
 import { mapPropsStream } from '../'
@@ -11,9 +11,9 @@ test('mapPropsStream creates a higher-order component from a stream', () => {
   const Double = mapPropsStream(props$ =>
     props$.map(({ n }) => ({ children: n * 2 }))
   )('div')
-  const wrapper = mount(<Double n={112} />)
-  const div = wrapper.find('div')
-  expect(div.text()).toBe('224')
-  wrapper.setProps({ n: 358 })
-  expect(div.text()).toBe('716')
+  const { container, rerender } = render(<Double n={112} />)
+  const div = container.querySelector('div')
+  expect(div.textContent).toBe('224')
+  rerender(<Double n={358} />)
+  expect(container.querySelector('div').textContent).toBe('716')
 })

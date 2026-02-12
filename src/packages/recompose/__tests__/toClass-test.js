@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import { render } from '@testing-library/react'
 import { toClass, withContext, compose } from '../'
 
 test('toClass returns the base component if it is already a class', () => {
@@ -32,7 +31,7 @@ test('toClass copies propTypes, displayName, contextTypes and defaultProps from 
 })
 
 test('toClass passes defaultProps correctly', () => {
-  const StatelessComponent = sinon.spy(() => null)
+  const StatelessComponent = jest.fn(() => null)
 
   StatelessComponent.displayName = 'Stateless'
   StatelessComponent.propTypes = { foo: PropTypes.string }
@@ -41,9 +40,9 @@ test('toClass passes defaultProps correctly', () => {
 
   const TestComponent = toClass(StatelessComponent)
 
-  mount(<TestComponent />)
-  expect(StatelessComponent.lastCall.args[0].foo).toBe('bar')
-  expect(StatelessComponent.lastCall.args[0].fizz).toBe('buzz')
+  render(<TestComponent />)
+  expect(StatelessComponent.mock.lastCall[0].foo).toBe('bar')
+  expect(StatelessComponent.mock.lastCall[0].fizz).toBe('buzz')
 })
 
 test('toClass passes context and props correctly', () => {
@@ -64,24 +63,28 @@ test('toClass passes context and props correctly', () => {
   )(Provider)
 
   const StatelessComponent = (props, context) =>
-    <div data-props={props} data-context={context} />
+    <div
+      data-fizz={props.fizz}
+      data-has-store={context.store === store ? 'yes' : 'no'}
+    />
 
   StatelessComponent.contextTypes = { store: PropTypes.object }
 
   const TestComponent = toClass(StatelessComponent)
 
-  const div = mount(
+  const { container } = render(
     <Provider store={store}>
       <TestComponent fizz="fizzbuzz" />
     </Provider>
-  ).find('div')
+  )
 
-  expect(div.prop('data-props').fizz).toBe('fizzbuzz')
-  expect(div.prop('data-context').store).toBe(store)
+  const div = container.querySelector('div')
+  expect(div.getAttribute('data-fizz')).toBe('fizzbuzz')
+  expect(div.getAttribute('data-has-store')).toBe('yes')
 })
 
 test('toClass works with strings (DOM components)', () => {
   const Div = toClass('div')
-  const div = mount(<Div>Hello</Div>)
-  expect(div.html()).toBe('<div>Hello</div>')
+  const { container } = render(<Div>Hello</Div>)
+  expect(container.innerHTML).toBe('<div>Hello</div>')
 })

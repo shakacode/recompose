@@ -1,11 +1,10 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import { render, act } from '@testing-library/react'
 import { pure, compose, withState } from '../'
 import { countRenders } from './utils'
 
 test('pure implements shouldComponentUpdate() using shallowEqual()', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const initialTodos = ['eat', 'drink', 'sleep']
@@ -17,18 +16,22 @@ test('pure implements shouldComponentUpdate() using shallowEqual()', () => {
 
   expect(Todos.displayName).toBe('withState(pure(countRenders(component)))')
 
-  mount(<Todos />)
-  const { updateTodos } = component.firstCall.args[0]
+  render(<Todos />)
+  const { updateTodos } = component.mock.calls[0][0]
 
-  expect(component.lastCall.args[0].todos).toBe(initialTodos)
-  expect(component.lastCall.args[0].renderCount).toBe(1)
+  expect(component.mock.lastCall[0].todos).toBe(initialTodos)
+  expect(component.mock.lastCall[0].renderCount).toBe(1)
 
   // Does not re-render
-  updateTodos(initialTodos)
-  expect(component.calledOnce).toBe(true)
+  act(() => {
+    updateTodos(initialTodos)
+  })
+  expect(component.mock.calls.length).toBe(1)
 
-  updateTodos(todos => todos.slice(0, -1))
-  expect(component.calledTwice).toBe(true)
-  expect(component.lastCall.args[0].todos).toEqual(['eat', 'drink'])
-  expect(component.lastCall.args[0].renderCount).toBe(2)
+  act(() => {
+    updateTodos(todos => todos.slice(0, -1))
+  })
+  expect(component.mock.calls.length).toBe(2)
+  expect(component.mock.lastCall[0].todos).toEqual(['eat', 'drink'])
+  expect(component.mock.lastCall[0].renderCount).toBe(2)
 })

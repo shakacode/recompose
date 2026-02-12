@@ -1,10 +1,9 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import { render, act } from '@testing-library/react'
 import { mapProps, withState, compose } from '../'
 
 test('mapProps maps owner props to child props', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const StringConcat = compose(
@@ -17,10 +16,12 @@ test('mapProps maps owner props to child props', () => {
 
   expect(StringConcat.displayName).toBe('withState(mapProps(component))')
 
-  mount(<StringConcat />)
-  const { updateStrings } = component.firstCall.args[0]
-  updateStrings(strings => [...strings, 'fa'])
+  render(<StringConcat />)
+  const { updateStrings } = component.mock.calls[0][0]
+  act(() => {
+    updateStrings(strings => [...strings, 'fa'])
+  })
 
-  expect(component.firstCall.args[0].string).toBe('doremi')
-  expect(component.secondCall.args[0].string).toBe('doremifa')
+  expect(component.mock.calls[0][0].string).toBe('doremi')
+  expect(component.mock.calls[1][0].string).toBe('doremifa')
 })

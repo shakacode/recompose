@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render } from '@testing-library/react'
 import { fromRenderProps, compose, toRenderProps, defaultProps } from '../'
 
 test('fromRenderProps passes additional props to base component', () => {
@@ -12,12 +12,13 @@ test('fromRenderProps passes additional props to base component', () => {
   )('div')
   expect(EnhancedComponent.displayName).toBe('fromRenderProps(div)')
 
-  const div = mount(<EnhancedComponent />)
-  expect(div.html()).toBe(`<div i18n="zh-TW"></div>`)
+  const { container } = render(<EnhancedComponent />)
+  expect(container.innerHTML).toBe(`<div i18n="zh-TW"></div>`)
 })
 
 test('fromRenderProps passes additional props to base component with custom renderPropName', () => {
-  const RenderPropsComponent = ({ render }) => render({ i18n: 'zh-TW' })
+  const RenderPropsComponent = ({ render: renderProp }) =>
+    renderProp({ i18n: 'zh-TW' })
   const EnhancedComponent = fromRenderProps(
     RenderPropsComponent,
     ({ i18n }) => ({
@@ -27,13 +28,14 @@ test('fromRenderProps passes additional props to base component with custom rend
   )('div')
   expect(EnhancedComponent.displayName).toBe('fromRenderProps(div)')
 
-  const div = mount(<EnhancedComponent />)
-  expect(div.html()).toBe(`<div i18n="zh-TW"></div>`)
+  const { container } = render(<EnhancedComponent />)
+  expect(container.innerHTML).toBe(`<div i18n="zh-TW"></div>`)
 })
 
 test('fromRenderProps passes additional props to base component with 2 RenderPropsComponents', () => {
   const RenderPropsComponent1 = ({ children }) => children({ theme: 'dark' })
-  const RenderPropsComponent2 = ({ render }) => render({ i18n: 'zh-TW' })
+  const RenderPropsComponent2 = ({ render: renderProp }) =>
+    renderProp({ i18n: 'zh-TW' })
   const EnhancedComponent = compose(
     fromRenderProps(
       RenderPropsComponent1,
@@ -50,8 +52,8 @@ test('fromRenderProps passes additional props to base component with 2 RenderPro
     'fromRenderProps(fromRenderProps(div))'
   )
 
-  const div = mount(<EnhancedComponent />)
-  expect(div.html()).toBe(`<div theme="dark" locale="zh-TW"></div>`)
+  const { container } = render(<EnhancedComponent />)
+  expect(container.innerHTML).toBe(`<div theme="dark" locale="zh-TW"></div>`)
 })
 
 test('fromRenderProps meet toRenderProps', () => {
@@ -67,8 +69,8 @@ test('fromRenderProps meet toRenderProps', () => {
   )('div')
   expect(EnhancedComponent.displayName).toBe('fromRenderProps(div)')
 
-  const div = mount(<EnhancedComponent />)
-  expect(div.html()).toBe(`<div foo="bar1"></div>`)
+  const { container } = render(<EnhancedComponent />)
+  expect(container.innerHTML).toBe(`<div foo="bar1"></div>`)
 })
 
 test('fromRenderProps with multiple arguments #693', () => {
@@ -83,6 +85,6 @@ test('fromRenderProps with multiple arguments #693', () => {
   )('div')
   expect(EnhancedComponent.displayName).toBe('fromRenderProps(div)')
 
-  const div = mount(<EnhancedComponent />)
-  expect(div.html()).toBe(`<div theme="dark" data="data"></div>`)
+  const { container } = render(<EnhancedComponent />)
+  expect(container.innerHTML).toBe(`<div theme="dark" data="data"></div>`)
 })

@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import { render, act } from '@testing-library/react'
 import {
   withPropsOnChange,
   withState,
@@ -10,10 +9,10 @@ import {
 } from '../'
 
 test('withPropsOnChange maps subset of owner props to child props', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
-  const mapSpy = sinon.spy()
+  const mapSpy = jest.fn()
   const StringConcat = compose(
     withState('strings', 'updateStrings', { a: 'a', b: 'b', c: 'c' }),
     flattenProp('strings'),
@@ -30,32 +29,36 @@ test('withPropsOnChange maps subset of owner props to child props', () => {
     'withState(flattenProp(withPropsOnChange(component)))'
   )
 
-  mount(<StringConcat />)
-  const { updateStrings } = component.firstCall.args[0]
-  expect(component.lastCall.args[0].foobar).toBe('ab')
-  expect(component.calledOnce).toBe(true)
-  expect(mapSpy.callCount).toBe(1)
+  render(<StringConcat />)
+  const { updateStrings } = component.mock.calls[0][0]
+  expect(component.mock.lastCall[0].foobar).toBe('ab')
+  expect(component.mock.calls.length).toBe(1)
+  expect(mapSpy).toHaveBeenCalledTimes(1)
 
   // Does not re-map for non-dependent prop updates
-  updateStrings(strings => ({ ...strings, c: 'baz' }))
-  expect(component.lastCall.args[0].foobar).toBe('ab')
-  expect(component.lastCall.args[0].c).toBe('c')
-  expect(component.calledTwice).toBe(true)
-  expect(mapSpy.callCount).toBe(1)
+  act(() => {
+    updateStrings(strings => ({ ...strings, c: 'baz' }))
+  })
+  expect(component.mock.lastCall[0].foobar).toBe('ab')
+  expect(component.mock.lastCall[0].c).toBe('c')
+  expect(component.mock.calls.length).toBe(2)
+  expect(mapSpy).toHaveBeenCalledTimes(1)
 
-  updateStrings(strings => ({ ...strings, a: 'foo', b: 'bar' }))
-  expect(component.lastCall.args[0].foobar).toBe('foobar')
-  expect(component.lastCall.args[0].c).toBe('baz')
-  expect(component.calledThrice).toBe(true)
-  expect(mapSpy.callCount).toBe(2)
+  act(() => {
+    updateStrings(strings => ({ ...strings, a: 'foo', b: 'bar' }))
+  })
+  expect(component.mock.lastCall[0].foobar).toBe('foobar')
+  expect(component.mock.lastCall[0].c).toBe('baz')
+  expect(component.mock.calls.length).toBe(3)
+  expect(mapSpy).toHaveBeenCalledTimes(2)
 })
 
 test('withPropsOnChange maps subset of owner props to child props with custom predicate', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
-  const mapSpy = sinon.spy()
-  const shouldMapSpy = sinon.spy()
+  const mapSpy = jest.fn()
+  const shouldMapSpy = jest.fn()
   const PageContainer = compose(
     withStateHandlers(
       { result: { hasError: false, loading: true, error: null } },
@@ -91,30 +94,36 @@ test('withPropsOnChange maps subset of owner props to child props with custom pr
     'withStateHandlers(withPropsOnChange(component))'
   )
 
-  mount(<PageContainer />)
-  const { updateResult } = component.firstCall.args[0]
-  expect(component.lastCall.args[0].errorEverHappened).toBe(false)
-  expect(component.lastCall.args[0].lastError).toBeUndefined()
-  expect(component.calledOnce).toBe(true)
-  expect(mapSpy.callCount).toBe(1)
-  expect(shouldMapSpy.callCount).toBe(1)
+  render(<PageContainer />)
+  const { updateResult } = component.mock.calls[0][0]
+  expect(component.mock.lastCall[0].errorEverHappened).toBe(false)
+  expect(component.mock.lastCall[0].lastError).toBeUndefined()
+  expect(component.mock.calls.length).toBe(1)
+  expect(mapSpy).toHaveBeenCalledTimes(1)
+  expect(shouldMapSpy).toHaveBeenCalledTimes(1)
 
-  updateResult({ loading: false, hasError: true, error: '1' })
-  expect(component.lastCall.args[0].errorEverHappened).toBe(true)
-  expect(component.lastCall.args[0].lastError).toBe('1')
-  expect(component.calledTwice).toBe(true)
-  expect(mapSpy.callCount).toBe(2)
+  act(() => {
+    updateResult({ loading: false, hasError: true, error: '1' })
+  })
+  expect(component.mock.lastCall[0].errorEverHappened).toBe(true)
+  expect(component.mock.lastCall[0].lastError).toBe('1')
+  expect(component.mock.calls.length).toBe(2)
+  expect(mapSpy).toHaveBeenCalledTimes(2)
 
   // Does not re-map for false map result
-  updateResult({ loading: true, hasError: false, error: null })
-  expect(component.lastCall.args[0].errorEverHappened).toBe(true)
-  expect(component.lastCall.args[0].lastError).toBe('1')
-  expect(component.calledThrice).toBe(true)
-  expect(mapSpy.callCount).toBe(2)
+  act(() => {
+    updateResult({ loading: true, hasError: false, error: null })
+  })
+  expect(component.mock.lastCall[0].errorEverHappened).toBe(true)
+  expect(component.mock.lastCall[0].lastError).toBe('1')
+  expect(component.mock.calls.length).toBe(3)
+  expect(mapSpy).toHaveBeenCalledTimes(2)
 
-  updateResult({ loading: false, hasError: true, error: '2' })
-  expect(component.lastCall.args[0].errorEverHappened).toBe(true)
-  expect(component.lastCall.args[0].lastError).toBe('2')
-  expect(component.callCount).toBe(4)
-  expect(mapSpy.callCount).toBe(3)
+  act(() => {
+    updateResult({ loading: false, hasError: true, error: '2' })
+  })
+  expect(component.mock.lastCall[0].errorEverHappened).toBe(true)
+  expect(component.mock.lastCall[0].lastError).toBe('2')
+  expect(component.mock.calls.length).toBe(4)
+  expect(mapSpy).toHaveBeenCalledTimes(3)
 })

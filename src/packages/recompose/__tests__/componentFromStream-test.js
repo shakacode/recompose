@@ -1,7 +1,6 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render, act } from '@testing-library/react'
 import { Observable, Subject } from 'rxjs'
-import sinon from 'sinon'
 import rxjsConfig from '../rxjsObservableConfig'
 import { componentFromStreamWithConfig } from '../componentFromStream'
 
@@ -15,11 +14,11 @@ test('componentFromStream creates a component from a prop stream transformation'
       </div>
     )
   )
-  const wrapper = mount(<Double n={112} />)
-  const div = wrapper.find('div')
-  expect(div.text()).toBe('224')
-  wrapper.setProps({ n: 358 })
-  expect(div.text()).toBe('716')
+  const { container, rerender } = render(<Double n={112} />)
+  const div = container.querySelector('div')
+  expect(div.textContent).toBe('224')
+  rerender(<Double n={358} />)
+  expect(container.querySelector('div').textContent).toBe('716')
 })
 
 test('componentFromStream unsubscribes from stream before unmounting', () => {
@@ -34,37 +33,36 @@ test('componentFromStream unsubscribes from stream before unmounting', () => {
     }
   })
   const Div = componentFromStream(() => vdom$)
-  const wrapper = mount(<Div />)
+  const { unmount } = render(<Div />)
   expect(subscriptions).toBe(1)
-  wrapper.unmount()
+  unmount()
   expect(subscriptions).toBe(0)
 })
 
 test('componentFromStream renders nothing until the stream emits a value', () => {
   const vdom$ = new Subject()
   const Div = componentFromStream(() => vdom$.mapTo(<div />))
-  const wrapper = mount(<Div />)
-  expect(wrapper.find('div').length).toBe(0)
-  vdom$.next()
-  wrapper.update()
-  expect(wrapper.find('div').length).toBe(1)
+  const { container } = render(<Div />)
+  expect(container.querySelector('div')).toBe(null)
+  act(() => {
+    vdom$.next()
+  })
+  expect(container.querySelector('div')).not.toBe(null)
 })
 
 test('handler multiple observers of props stream', () => {
-  const Other = () => <div />
   const Div = componentFromStream(props$ =>
     // Adds three observers to props stream
-    props$.combineLatest(props$, props$, props1 => <Other {...props1} />)
+    props$.combineLatest(props$, props$, props1 => <div {...props1} />)
   )
 
-  const wrapper = mount(<Div data-value={1} />)
-  const div = wrapper.find(Other)
+  const { container, rerender } = render(<Div data-value={1} />)
+  const div = container.querySelector('div')
 
-  expect(div.prop('data-value')).toBe(1)
-  wrapper.setProps({ 'data-value': 2 })
-  wrapper.update()
-  const div2 = wrapper.find(Other)
-  expect(div2.prop('data-value')).toBe(2)
+  expect(div.getAttribute('data-value')).toBe('1')
+  rerender(<Div data-value={2} />)
+  const div2 = container.querySelector('div')
+  expect(div2.getAttribute('data-value')).toBe('2')
 })
 
 test('complete props stream before unmounting', () => {
@@ -85,12 +83,12 @@ test('complete props stream before unmounting', () => {
     return props$.combineLatest(first$, last$, props1 => <div {...props1} />)
   })
 
-  const wrapper = mount(<Div />)
+  const { container, unmount } = render(<Div />)
 
   expect(counter).toBe(1)
-  expect(wrapper.find('div').length).toBe(1)
+  expect(container.querySelector('div')).not.toBe(null)
 
-  wrapper.unmount()
+  unmount()
   expect(counter).toBe(0)
 })
 
@@ -101,12 +99,12 @@ test('completed props stream should throw an exception', () => {
     return props$.combineLatest(first$, props1 => <div {...props1} />)
   })
 
-  const wrapper = mount(<Div />)
+  const { container, unmount } = render(<Div />)
 
-  expect(wrapper.find('div').length).toBe(1)
+  expect(container.querySelector('div')).not.toBe(null)
 
-  const error = sinon.stub(console, 'error')
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-  expect(() => wrapper.unmount()).toThrowError(/no elements in sequence/)
-  expect(error.called).toBe(true)
+  expect(() => unmount()).toThrowError(/no elements in sequence/)
+  expect(error).toHaveBeenCalled()
 })
