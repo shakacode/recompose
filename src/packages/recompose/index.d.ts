@@ -210,13 +210,13 @@ declare module "@shakacode/recompose" {
 
     // withContext: https://github.com/shakacode/recompose/blob/master/docs/API.md#withContext
     export function withContext<TContext, TProps>(
-        childContextTypes: PropTypes.ValidationMap<TContext>,
+        childContextTypes: Record<keyof TContext, unknown>,
         getChildContext: mapper<TProps, TContext>,
     ): InferableComponentEnhancer<{}>;
 
     // getContext: https://github.com/shakacode/recompose/blob/master/docs/API.md#getContext
     export function getContext<TContext>(
-        contextTypes: PropTypes.ValidationMap<TContext>,
+        contextTypes: Record<keyof TContext, unknown>,
     ): InferableComponentEnhancer<TContext>;
 
     interface _ReactLifeCycleFunctionsThisArguments<TProps, TState> {

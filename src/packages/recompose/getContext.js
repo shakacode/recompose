@@ -3,6 +3,9 @@ import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
 import { getOrCreateContext } from './utils/contextStore'
 
+// Note: only the keys of contextTypes are used to select which context values
+// to inject. The validator values (PropTypes) are not used for validation since
+// PropTypes is deprecated and legacy context was removed in React 19.
 const getContext = contextTypes => BaseComponent => {
   const contextKeys = Object.keys(contextTypes)
 

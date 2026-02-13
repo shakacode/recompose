@@ -121,7 +121,7 @@ test('withStateHandlers have access to props', () => {
   )
 })
 
-test('withStateHandlers passes immutable state updaters', () => {
+test('withStateHandlers passes stable state updater references', () => {
   const component = jest.fn(() => null)
   component.displayName = 'component'
 
@@ -143,11 +143,14 @@ test('withStateHandlers passes immutable state updaters', () => {
     <Counter initialCounter={initialCounter} incrementValue={incrementValue} />
   )
 
-  const { increment } = component.mock.calls[0][0]
+  const incrementBefore = component.mock.calls[0][0].increment
 
   act(() => {
-    increment()
+    incrementBefore()
   })
+
+  const incrementAfter = component.mock.lastCall[0].increment
+  expect(incrementAfter).toBe(incrementBefore)
   expect(component.mock.lastCall[0].counter).toBe(
     initialCounter + incrementValue
   )

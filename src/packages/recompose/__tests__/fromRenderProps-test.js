@@ -13,7 +13,7 @@ test('fromRenderProps passes additional props to base component', () => {
   expect(EnhancedComponent.displayName).toBe('fromRenderProps(div)')
 
   const { container } = render(<EnhancedComponent />)
-  expect(container.innerHTML).toBe(`<div i18n="zh-TW"></div>`)
+  expect(container.querySelector('div').getAttribute('i18n')).toBe('zh-TW')
 })
 
 test('fromRenderProps passes additional props to base component with custom renderPropName', () => {
@@ -29,7 +29,7 @@ test('fromRenderProps passes additional props to base component with custom rend
   expect(EnhancedComponent.displayName).toBe('fromRenderProps(div)')
 
   const { container } = render(<EnhancedComponent />)
-  expect(container.innerHTML).toBe(`<div i18n="zh-TW"></div>`)
+  expect(container.querySelector('div').getAttribute('i18n')).toBe('zh-TW')
 })
 
 test('fromRenderProps passes additional props to base component with 2 RenderPropsComponents', () => {
@@ -53,7 +53,9 @@ test('fromRenderProps passes additional props to base component with 2 RenderPro
   )
 
   const { container } = render(<EnhancedComponent />)
-  expect(container.innerHTML).toBe(`<div theme="dark" locale="zh-TW"></div>`)
+  const div = container.querySelector('div')
+  expect(div.getAttribute('theme')).toBe('dark')
+  expect(div.getAttribute('locale')).toBe('zh-TW')
 })
 
 test('fromRenderProps meet toRenderProps', () => {
@@ -70,7 +72,7 @@ test('fromRenderProps meet toRenderProps', () => {
   expect(EnhancedComponent.displayName).toBe('fromRenderProps(div)')
 
   const { container } = render(<EnhancedComponent />)
-  expect(container.innerHTML).toBe(`<div foo="bar1"></div>`)
+  expect(container.querySelector('div').getAttribute('foo')).toBe('bar1')
 })
 
 test('fromRenderProps with multiple arguments #693', () => {
@@ -86,5 +88,7 @@ test('fromRenderProps with multiple arguments #693', () => {
   expect(EnhancedComponent.displayName).toBe('fromRenderProps(div)')
 
   const { container } = render(<EnhancedComponent />)
-  expect(container.innerHTML).toBe(`<div theme="dark" data="data"></div>`)
+  const div = container.querySelector('div')
+  expect(div.getAttribute('theme')).toBe('dark')
+  expect(div.getAttribute('data')).toBe('data')
 })

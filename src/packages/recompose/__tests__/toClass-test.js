@@ -33,7 +33,6 @@ test('toClass passes defaultProps correctly', () => {
 
   StatelessComponent.displayName = 'Stateless'
   StatelessComponent.propTypes = { foo: PropTypes.string }
-  StatelessComponent.contextTypes = { bar: PropTypes.object }
   StatelessComponent.defaultProps = { foo: 'bar', fizz: 'buzz' }
 
   const TestComponent = toClass(StatelessComponent)
