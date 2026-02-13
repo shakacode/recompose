@@ -1,5 +1,5 @@
 // @shakacode/recompose is a fork of `recompose`, and these types are based on work done in `@types/recompose`.
-// Source: https://github.com/DefinitelyTyped/DefinitelyTyped/blob/61bebf7cbfd07a3f7a28fd2d8df3ea10a0a8d0a3/types/shakacode__recompose/index.d.ts
+// Based on: https://github.com/DefinitelyTyped/DefinitelyTyped/blob/61bebf7cbfd07a3f7a28fd2d8df3ea10a0a8d0a3/types/shakacode__recompose/index.d.ts
 
 /// <reference types="react" />
 
@@ -8,12 +8,9 @@ declare module "@shakacode/recompose" {
     import * as React from "react";
     import { ComponentClass, ComponentType as Component, FunctionComponent } from "react";
 
-    type mapper<TInner, TOutter> = (input: TInner) => TOutter;
+    type mapper<TInner, TOuter> = (input: TInner) => TOuter;
     type predicate<T> = mapper<T, boolean>;
     type predicateDiff<T> = (current: T, next: T) => boolean;
-
-    // Diff / Omit taken from https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html
-    type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
     interface Observer<T> {
         next(props: T): void;
@@ -28,8 +25,8 @@ declare module "@shakacode/recompose" {
         subscribe(observer: Observer<T>): Subscription;
     }
 
-    interface ComponentEnhancer<TInner, TOutter> {
-        (component: Component<TInner>): ComponentClass<TOutter>;
+    interface ComponentEnhancer<TInner, TOuter> {
+        (component: Component<TInner>): ComponentClass<TOuter>;
     }
 
     // Injects props and removes them from the prop requirements.
@@ -56,41 +53,41 @@ declare module "@shakacode/recompose" {
     // Higher-order components: https://github.com/shakacode/recompose/blob/master/docs/API.md#higher-order-components
 
     // mapProps: https://github.com/shakacode/recompose/blob/master/docs/API.md#mapprops
-    export function mapProps<TInner, TOutter>(
-        propsMapper: mapper<TOutter, TInner>,
-    ): InferableComponentEnhancerWithProps<TInner, TOutter>;
+    export function mapProps<TInner, TOuter>(
+        propsMapper: mapper<TOuter, TInner>,
+    ): InferableComponentEnhancerWithProps<TInner, TOuter>;
 
     // withProps: https://github.com/shakacode/recompose/blob/master/docs/API.md#withprops
-    export function withProps<TInner, TOutter>(
-        createProps: TInner | mapper<TOutter, TInner>,
-    ): InferableComponentEnhancerWithProps<TInner & TOutter, TOutter>;
+    export function withProps<TInner, TOuter>(
+        createProps: TInner | mapper<TOuter, TInner>,
+    ): InferableComponentEnhancerWithProps<TInner & TOuter, TOuter>;
 
     // withPropsOnChange: https://github.com/shakacode/recompose/blob/master/docs/API.md#withpropsonchange
-    export function withPropsOnChange<TInner, TOutter>(
-        shouldMapOrKeys: string[] | predicateDiff<TOutter>,
-        createProps: mapper<TOutter, TInner>,
-    ): InferableComponentEnhancerWithProps<TInner & TOutter, TOutter>;
+    export function withPropsOnChange<TInner, TOuter>(
+        shouldMapOrKeys: string[] | predicateDiff<TOuter>,
+        createProps: mapper<TOuter, TInner>,
+    ): InferableComponentEnhancerWithProps<TInner & TOuter, TOuter>;
 
     // withHandlers: https://github.com/shakacode/recompose/blob/master/docs/API.md#withhandlers
     type EventHandler = Function;
-    // This type is required to infer TOutter
-    type HandleCreatorsStructure<TOutter> = {
-        [handlerName: string]: mapper<TOutter, EventHandler>;
+    // This type is required to infer TOuter
+    type HandleCreatorsStructure<TOuter> = {
+        [handlerName: string]: mapper<TOuter, EventHandler>;
     };
     // This type is required to infer THandlers
-    type HandleCreatorsHandlers<TOutter, THandlers> = {
-        [P in keyof THandlers]: (props: TOutter) => THandlers[P];
+    type HandleCreatorsHandlers<TOuter, THandlers> = {
+        [P in keyof THandlers]: (props: TOuter) => THandlers[P];
     };
-    type HandleCreators<TOutter, THandlers> =
-        & HandleCreatorsStructure<TOutter>
-        & HandleCreatorsHandlers<TOutter, THandlers>;
-    type HandleCreatorsFactory<TOutter, THandlers> = (initialProps: TOutter) => HandleCreators<TOutter, THandlers>;
+    type HandleCreators<TOuter, THandlers> =
+        & HandleCreatorsStructure<TOuter>
+        & HandleCreatorsHandlers<TOuter, THandlers>;
+    type HandleCreatorsFactory<TOuter, THandlers> = (initialProps: TOuter) => HandleCreators<TOuter, THandlers>;
 
-    export function withHandlers<TOutter, THandlers>(
+    export function withHandlers<TOuter, THandlers>(
         handlerCreators:
-            | HandleCreators<TOutter, THandlers>
-            | HandleCreatorsFactory<TOutter, THandlers>,
-    ): InferableComponentEnhancerWithProps<THandlers & TOutter, TOutter>;
+            | HandleCreators<TOuter, THandlers>
+            | HandleCreatorsFactory<TOuter, THandlers>,
+    ): InferableComponentEnhancerWithProps<THandlers & TOuter, TOuter>;
 
     // defaultProps: https://github.com/shakacode/recompose/blob/master/docs/API.md#defaultprops
     export function defaultProps<T = {}>(
@@ -99,13 +96,13 @@ declare module "@shakacode/recompose" {
 
     // renameProp: https://github.com/shakacode/recompose/blob/master/docs/API.md#renameProp
     export function renameProp(
-        outterName: string,
+        outerName: string,
         innerName: string,
     ): ComponentEnhancer<any, any>;
 
     // renameProps: https://github.com/shakacode/recompose/blob/master/docs/API.md#renameProps
     type NameMap = {
-        [outterName: string]: string;
+        [outerName: string]: string;
     };
     export function renameProps(
         nameMap: NameMap,
@@ -123,19 +120,19 @@ declare module "@shakacode/recompose" {
         TStateUpdaterName extends string,
     > =
         & { [stateName in TStateName]: TState }
-        & { [stateUpdateName in TStateUpdaterName]: (state: TState) => TState };
+        & { [stateUpdateName in TStateUpdaterName]: (updateFn: TState | ((prevState: TState) => TState), callback?: () => void) => void };
     export function withState<
-        TOutter,
+        TOuter,
         TState,
         TStateName extends string,
         TStateUpdaterName extends string,
     >(
         stateName: TStateName,
         stateUpdaterName: TStateUpdaterName,
-        initialState: TState | mapper<TOutter, TState>,
+        initialState: TState | mapper<TOuter, TState>,
     ): InferableComponentEnhancerWithProps<
         stateProps<TState, TStateName, TStateUpdaterName>,
-        TOutter
+        TOuter
     >;
 
     // withStateHandlers: https://github.com/shakacode/recompose/blob/master/docs/API.md#withstatehandlers
@@ -143,13 +140,13 @@ declare module "@shakacode/recompose" {
     type StateHandlerMap<TState> = {
         [updaterName: string]: StateHandler<TState>;
     };
-    type StateUpdaters<TOutter, TState, TUpdaters> = {
-        [updaterName in keyof TUpdaters]: (state: TState, props: TOutter) => TUpdaters[updaterName];
+    type StateUpdaters<TOuter, TState, TUpdaters> = {
+        [updaterName in keyof TUpdaters]: (state: TState, props: TOuter) => TUpdaters[updaterName];
     };
-    export function withStateHandlers<TState, TUpdaters extends StateHandlerMap<TState>, TOutter = {}>(
-        createProps: TState | mapper<TOutter, TState>,
-        stateUpdaters: StateUpdaters<TOutter, TState, TUpdaters>,
-    ): InferableComponentEnhancerWithProps<TOutter & TState & TUpdaters, TOutter>;
+    export function withStateHandlers<TState, TUpdaters extends StateHandlerMap<TState>, TOuter = {}>(
+        createProps: TState | mapper<TOuter, TState>,
+        stateUpdaters: StateUpdaters<TOuter, TState, TUpdaters>,
+    ): InferableComponentEnhancerWithProps<TOuter & TState & TUpdaters, TOuter>;
 
     // withReducer: https://github.com/shakacode/recompose/blob/master/docs/API.md#withReducer
     type reducer<TState, TAction> = (s: TState, a: TAction) => TState;
@@ -162,7 +159,7 @@ declare module "@shakacode/recompose" {
         & { [stateName in TStateName]: TState }
         & { [dispatchName in TDispatchName]: (a: TAction) => void };
     export function withReducer<
-        TOutter,
+        TOuter,
         TState,
         TAction,
         TStateName extends string,
@@ -171,23 +168,23 @@ declare module "@shakacode/recompose" {
         stateName: TStateName,
         dispatchName: TDispatchName,
         reducer: reducer<TState, TAction>,
-        initialState: TState | mapper<TOutter, TState>,
+        initialState: TState | mapper<TOuter, TState>,
     ): InferableComponentEnhancerWithProps<
         reducerProps<TState, TAction, TStateName, TDispatchName>,
-        TOutter
+        TOuter
     >;
 
     // branch: https://github.com/shakacode/recompose/blob/master/docs/API.md#branch
-    export function branch<TOutter>(
-        test: predicate<TOutter>,
-        trueEnhancer: ComponentEnhancer<any, any> | InferableComponentEnhancer<{}>,
-        falseEnhancer?: ComponentEnhancer<any, any> | InferableComponentEnhancer<{}>,
-    ): ComponentEnhancer<any, TOutter>;
+    export function branch<TInner, TOuter>(
+        test: predicate<TOuter>,
+        trueEnhancer: ComponentEnhancer<TInner, TOuter> | InferableComponentEnhancer<{}>,
+        falseEnhancer?: ComponentEnhancer<TInner, TOuter> | InferableComponentEnhancer<{}>,
+    ): ComponentEnhancer<TInner, TOuter>;
 
     // renderComponent: https://github.com/shakacode/recompose/blob/master/docs/API.md#renderComponent
     export function renderComponent<TProps>(
         component: string | Component<TProps>,
-    ): ComponentEnhancer<any, any>;
+    ): ComponentEnhancer<any, TProps>;
 
     // renderNothing: https://github.com/shakacode/recompose/blob/master/docs/API.md#renderNothing
     export const renderNothing: InferableComponentEnhancer<{}>;
@@ -214,7 +211,7 @@ declare module "@shakacode/recompose" {
     // withContext: https://github.com/shakacode/recompose/blob/master/docs/API.md#withContext
     export function withContext<TContext, TProps>(
         childContextTypes: PropTypes.ValidationMap<TContext>,
-        getChildContext: mapper<TProps, any>,
+        getChildContext: mapper<TProps, TContext>,
     ): InferableComponentEnhancer<{}>;
 
     // getContext: https://github.com/shakacode/recompose/blob/master/docs/API.md#getContext
@@ -303,16 +300,16 @@ declare module "@shakacode/recompose" {
     export const toClass: InferableComponentEnhancer<{}>;
 
     // toRenderProps: https://github.com/shakacode/recompose/blob/master/docs/API.md#torenderprops
-    export function toRenderProps<TInner, TOutter>(
-        hoc: InferableComponentEnhancerWithProps<TInner & TOutter, TOutter>,
-    ): FunctionComponent<TOutter & { children: (props: TInner) => React.ReactElement }>;
+    export function toRenderProps<TInner, TOuter>(
+        hoc: InferableComponentEnhancerWithProps<TInner & TOuter, TOuter>,
+    ): FunctionComponent<TOuter & { children: (props: TInner) => React.ReactElement }>;
 
     // fromRenderProps: https://github.com/shakacode/recompose/blob/master/docs/API.md#fromrenderprops
-    export function fromRenderProps<TInner, TOutter, TRenderProps = {}>(
+    export function fromRenderProps<TInner, TOuter, TRenderProps = {}>(
         RenderPropsComponent: Component<any>,
         propsMapper: (props: TRenderProps) => TInner,
         renderPropName?: string,
-    ): ComponentEnhancer<TInner & TOutter, TOutter>;
+    ): ComponentEnhancer<TInner & TOuter, TOuter>;
 
     // Static property helpers: https://github.com/shakacode/recompose/blob/master/docs/API.md#static-property-helpers
 
@@ -335,12 +332,12 @@ declare module "@shakacode/recompose" {
     // Utilities: https://github.com/shakacode/recompose/blob/master/docs/API.md#utilities
 
     // compose: https://github.com/shakacode/recompose/blob/master/docs/API.md#compose
-    export function compose<TInner, TOutter>(
+    export function compose<TInner, TOuter>(
         ...functions: Function[]
-    ): ComponentEnhancer<TInner, TOutter>;
-    // export function compose<TOutter>(
+    ): ComponentEnhancer<TInner, TOuter>;
+    // export function compose<TOuter>(
     //     ...functions: Array<Function>
-    // ): ComponentEnhancer<any, TOutter>;
+    // ): ComponentEnhancer<any, TOuter>;
     // export function compose(
     //     ...functions: Array<Function>
     // ): ComponentEnhancer<any, any>;
@@ -367,23 +364,10 @@ declare module "@shakacode/recompose" {
         value: any,
     ): boolean;
 
-    // createEagerElement: https://github.com/shakacode/recompose/blob/master/docs/API.md#createEagerElement
-    export function createEagerElement(
-        type: Component<any> | string,
-        props?: Object,
-        children?: React.ReactNode,
-    ): React.ReactElement;
-
-    // createEagerFactory: https://github.com/shakacode/recompose/blob/master/docs/API.md#createEagerFactory
-    type componentFactory = (props?: Object, children?: React.ReactNode) => React.ReactElement;
-    export function createEagerFactory(
-        type: Component<any> | string,
-    ): componentFactory;
-
     // createSink: https://github.com/shakacode/recompose/blob/master/docs/API.md#createSink
-    export function createSink(
-        callback: (props: Object) => void,
-    ): React.ComponentClass<any>; // ???
+    export function createSink<TProps = {}>(
+        callback: (props: TProps) => void,
+    ): React.ComponentClass<TProps>;
 
     // componentFromProp: https://github.com/shakacode/recompose/blob/master/docs/API.md#componentFromProp
     export function componentFromProp(
@@ -418,14 +402,14 @@ declare module "@shakacode/recompose" {
     ) => Component<TProps>;
 
     // mapPropsStream: https://github.com/shakacode/recompose/blob/master/docs/API.md#mapPropsStream
-    export function mapPropsStream<TInner, TOutter>(
-        transform: mapper<Subscribable<TOutter>, Subscribable<TInner>>,
-    ): ComponentEnhancer<TInner, TOutter>;
+    export function mapPropsStream<TInner, TOuter>(
+        transform: mapper<Subscribable<TOuter>, Subscribable<TInner>>,
+    ): ComponentEnhancer<TInner, TOuter>;
 
     // mapPropsStreamWithConfig: https://github.com/shakacode/recompose/blob/master/docs/API.md#mappropsstreamwithconfig
-    export function mapPropsStreamWithConfig(config: ObservableConfig): <TInner, TOutter>(
-        transform: mapper<Subscribable<TOutter>, Subscribable<TInner>>,
-    ) => ComponentEnhancer<TInner, TOutter>;
+    export function mapPropsStreamWithConfig(config: ObservableConfig): <TInner, TOuter>(
+        transform: mapper<Subscribable<TOuter>, Subscribable<TInner>>,
+    ) => ComponentEnhancer<TInner, TOuter>;
 
     // createEventHandler: https://github.com/shakacode/recompose/blob/master/docs/API.md#createEventHandler
     type EventHandlerOf<T, TSubs extends Subscribable<T>> = {
