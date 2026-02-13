@@ -139,8 +139,12 @@ try {
     exit(0)
   }
 
+  const otp = readline.question('Enter your npm OTP code: ')
+
   log('Publishing...')
-  if (exec(`cd ${outDir} && npm publish --access public `).code !== 0) {
+  if (
+    exec(`cd ${outDir} && npm publish --access public --otp=${otp}`).code !== 0
+  ) {
     logError('Publish failed. Aborting release.')
     exit(1)
   }
