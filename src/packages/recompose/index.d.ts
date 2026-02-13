@@ -157,7 +157,7 @@ declare module "@shakacode/recompose" {
         TDispatchName extends string,
     > =
         & { [stateName in TStateName]: TState }
-        & { [dispatchName in TDispatchName]: (a: TAction) => void };
+        & { [dispatchName in TDispatchName]: (a: TAction, callback?: (newState: TState) => void) => void };
     export function withReducer<
         TOuter,
         TState,

@@ -2,13 +2,13 @@
 
 In these API docs, a **higher-order component** (HOC) refers to a function that accepts a single React component and returns a new React component.
 
-```js
+```ts
 const EnhancedComponent = hoc(BaseComponent)
 ```
 
 This form makes HOCs (sometimes called **enhancers**) composable:
 
-```js
+```ts
 const composedHoc = compose(hoc1, hoc2, hoc3)
 
 // Same as
@@ -17,7 +17,7 @@ const composedHoc = BaseComponent => hoc1(hoc2(hoc3(BaseComponent)))
 
 Most Recompose helpers are **functions that return higher-order components**:
 
-```js
+```ts
 const hoc = mapProps(ownerProps => childProps)
 const EnhancedComponent = hoc(BaseComponent)
 
@@ -27,7 +27,7 @@ const EnhancedComponent = mapProps(ownerProps => childProps)(BaseComponent)
 
 Some, like `pure`, are higher-order components themselves:
 
-```js
+```ts
 const PureComponent = pure(BaseComponent)
 ```
 
@@ -85,7 +85,7 @@ const PureComponent = pure(BaseComponent)
 
 ### `mapProps()`
 
-```js
+```ts
 mapProps(
   propsMapper: (ownerProps: Object) => Object,
 ): HigherOrderComponent
@@ -95,7 +95,7 @@ Accepts a function that maps owner props to a new collection of props that are p
 
 `mapProps()` pairs well with functional utility libraries like [lodash/fp](https://github.com/lodash/lodash/tree/npm/fp). For example, Recompose does not come with a `omitProps()` function, but you can easily build one using lodash-fp's `omit()`:
 
-```js
+```ts
 const omitProps = keys => mapProps(props => omit(keys, props))
 
 // Because of currying in lodash-fp, this is the same as
@@ -104,7 +104,7 @@ const omitProps = compose(mapProps, omit)
 
 ### `withProps()`
 
-```js
+```ts
 withProps(
   createProps: (ownerProps: Object) => Object | Object
 ): HigherOrderComponent
@@ -117,7 +117,7 @@ Instead of a function, you can also pass a props object directly. In this form, 
 
 ### `withPropsOnChange()`
 
-```js
+```ts
 withPropsOnChange(
   shouldMapOrKeys: Array<string> | (props: Object, nextProps: Object) => boolean,
   createProps: (ownerProps: Object) => Object
@@ -130,7 +130,7 @@ Instead of an array of prop keys, the first parameter can also be a function tha
 
 ### `withHandlers()`
 
-```js
+```ts
 withHandlers(
   handlerCreators: {
     [handlerName: string]: (props: Object) => Function
@@ -149,7 +149,7 @@ Handlers are passed to the base component as immutable props, whose identities a
 
 Usage example:
 
-```js
+```ts
 const enhance = compose(
   withState('value', 'updateValue', ''),
   withHandlers({
@@ -174,7 +174,7 @@ const Form = enhance(({ value, onChange, onSubmit }) =>
 
 ### `defaultProps()`
 
-```js
+```ts
 defaultProps(
   props: Object
 ): HigherOrderComponent
@@ -187,7 +187,7 @@ Although it has a similar effect, using the `defaultProps()` HoC is *not* the sa
 
 ### `renameProp()`
 
-```js
+```ts
 renameProp(
   oldName: string,
   newName: string
@@ -198,7 +198,7 @@ Renames a single prop.
 
 Example:
 
-```js
+```ts
 const enhance = compose(
   withProps({ 'loadingDataFromApi': true, 'posts': [] }),
   renameProp('loadingDataFromApi', 'isLoading'),
@@ -217,7 +217,7 @@ const Posts = enhance(({ isLoading, items }) => (
 
 ### `renameProps()`
 
-```js
+```ts
 renameProps(
   nameMap: { [key: string]: string }
 ): HigherOrderComponent
@@ -227,7 +227,7 @@ Renames multiple props, using a map of old prop names to new prop names.
 
 Example:
 
-```js
+```ts
 const enhance = compose(
   withProps({ 'loadingDataFromApi': true, 'posts': [] }),
   renameProps({ 'loadingDataFromApi': 'isLoading', 'posts': 'items' }),
@@ -245,7 +245,7 @@ const Posts = enhance(({ isLoading, items }) => (
 
 ### `flattenProp()`
 
-```js
+```ts
 flattenProp(
   propName: string
 ): HigherOrderComponent
@@ -253,7 +253,7 @@ flattenProp(
 
 Flattens a prop so that its fields are spread out into the props object.
 
-```js
+```ts
 const enhance = compose(
   withProps({
     object: { a: 'a', b: 'b' },
@@ -268,7 +268,7 @@ const Abc = enhance(BaseComponent)
 
 An example use case for `flattenProp()` is when receiving fragment data from Relay. Relay fragments are passed as an object of props, which you often want flattened out into its constituent fields:
 
-```js
+```ts
 // The `post` prop is an object with title, author, and content fields
 const enhance = flattenProp('post')
 const Post = enhance(({ title, content, author }) =>
@@ -282,24 +282,24 @@ const Post = enhance(({ title, content, author }) =>
 
 ### `withState()`
 
-```js
-withState(
+```ts
+// TState = the type of the state value
+withState<TState>(
   stateName: string,
   stateUpdaterName: string,
-  initialState: any | (props: Object) => any
+  initialState: TState | ((props: Object) => TState)
 ): HigherOrderComponent
 ```
 
 Passes two additional props to the base component: a state value, and a function to update that state value. The state updater has the following signature:
 
-```js
-stateUpdater<T>((prevValue: T) => T, ?callback: Function): void
-stateUpdater(newValue: any, ?callback: Function): void
+```ts
+stateUpdater(updateFn: TState | ((prevValue: TState) => TState), callback?: () => void): void
 ```
 
 The first form accepts a function which maps the previous state value to a new state value. You'll likely want to use this state updater along with `withHandlers()` to create specific updater functions. For example, to create a HoC that adds basic counting functionality to a component:
 
-```js
+```ts
 const addCounting = compose(
   withState('counter', 'setCounter', 0),
   withHandlers({
@@ -318,14 +318,14 @@ An initial state value is required. It can be either the state value itself, or 
 
 ### `withStateHandlers()`
 
-```js
-withStateHandlers(
-  initialState: Object | (props: Object) => any,
+```ts
+// TState = the type of the state object
+withStateHandlers<TState>(
+  initialState: TState | ((props: Object) => TState),
   stateUpdaters: {
-    [key: string]: (state:Object, props:Object) => (...payload: any[]) => Object
+    [key: string]: (state: TState, props: Object) => (...payload: any[]) => Partial<TState> | undefined
   }
-)
-
+): HigherOrderComponent
 ```
 
 Passes state object properties and immutable updater functions
@@ -336,7 +336,7 @@ Returning undefined does not cause a component rerender.
 
 Example:
 
-```js
+```ts
   const Counter = withStateHandlers(
     ({ initialCounter = 0 }) => ({
       counter: initialCounter,
@@ -364,12 +364,13 @@ Example:
 
 ### `withReducer()`
 
-```js
-withReducer<S, A>(
+```ts
+// TState = the type of the state value, TAction = the type of dispatched actions
+withReducer<TState, TAction>(
   stateName: string,
   dispatchName: string,
-  reducer: (state: S, action: A) => S,
-  initialState: S | (ownerProps: Object) => S
+  reducer: (state: TState, action: TAction) => TState,
+  initialState: TState | ((ownerProps: Object) => TState)
 ): HigherOrderComponent
 ```
 
@@ -377,19 +378,19 @@ Similar to `withState()`, but state updates are applied using a reducer function
 
 Passes two additional props to the base component: a state value, and a dispatch method. The dispatch method has the following signature:
 
-```js
-dispatch(action: Object, ?callback: Function): void
+```ts
+dispatch(action: TAction, callback?: (newState: TState) => void): void
 ```
 
 It sends an action to the reducer, after which the new state is applied. It also accepts an optional second parameter, a callback function with the new state as its only argument.
 
 ### `branch()`
 
-```js
+```ts
 branch(
   test: (props: Object) => boolean,
   left: HigherOrderComponent,
-  right: ?HigherOrderComponent
+  right?: HigherOrderComponent
 ): HigherOrderComponent
 ```
 
@@ -397,7 +398,7 @@ Accepts a test function and two higher-order components. The test function is pa
 
 ### `renderComponent()`
 
-```js
+```ts
 renderComponent(
   Component: ReactClass | ReactFunctionalComponent | string
 ): HigherOrderComponent
@@ -407,7 +408,7 @@ Takes a component and returns a higher-order component version of that component
 
 This is useful in combination with another helper that expects a higher-order component, like `branch()`:
 
-```js
+```ts
 // `isLoading()` is a function that returns whether or not the component
 // is in a loading state
 const spinnerWhileLoading = isLoading =>
@@ -432,7 +433,7 @@ const Post = enhance(({ title, author, content }) =>
 
 ### `renderNothing()`
 
-```js
+```ts
 renderNothing: HigherOrderComponent
 ```
 
@@ -440,7 +441,7 @@ A higher-order component that always renders `null`.
 
 This is useful in combination with another helper that expects a higher-order component, like `branch()`:
 
-```js
+```ts
 // `hasNoData()` is a function that returns true if the component has
 // no data
 const hideIfNoData = hasNoData =>
@@ -464,7 +465,7 @@ const Post = enhance(({ title, author, content }) =>
 
 ### `shouldUpdate()`
 
-```js
+```ts
 shouldUpdate(
   test: (props: Object, nextProps: Object) => boolean
 ): HigherOrderComponent
@@ -475,7 +476,7 @@ Higher-order component version of [`shouldComponentUpdate()`](https://facebook.g
 
 ### `pure()`
 
-```js
+```ts
 pure: HigherOrderComponent
 ```
 
@@ -483,7 +484,7 @@ Prevents the component from updating unless a prop has changed. Uses `shallowEqu
 
 ### `onlyUpdateForKeys()`
 
-```js
+```ts
 onlyUpdateForKeys(
   propKeys: Array<string>
 ): HigherOrderComponent
@@ -495,7 +496,7 @@ This is a much better optimization than the popular approach of using PureRender
 
 Example:
 
-```js
+```ts
 /**
  * If the owner passes unnecessary props (say, an array of comments), it will
  * not lead to wasted render cycles.
@@ -515,7 +516,7 @@ const Post = enhance(({ title, content, author }) =>
 
 ### `onlyUpdateForPropTypes()`
 
-```js
+```ts
 onlyUpdateForPropTypes: HigherOrderComponent
 ```
 
@@ -523,7 +524,7 @@ Works like `onlyUpdateForKeys()`, but prop keys are inferred from the `propTypes
 
 If the base component does not have any `propTypes`, the component will never receive any updates. This probably isn't the expected behavior, so a warning is printed to the console.
 
-```js
+```ts
 import PropTypes from 'prop-types'; // You need to import prop-types. See https://facebook.github.io/react/docs/typechecking-with-proptypes.html
 
 const enhance = compose(
@@ -546,10 +547,11 @@ const Post = enhance(({ title, content, author }) =>
 
 ### `withContext()`
 
-```js
-withContext(
-  childContextTypes: Object,
-  getChildContext: (props: Object) => Object
+```ts
+// TContext = the type of the provided child context
+withContext<TContext>(
+  childContextTypes: PropTypes.ValidationMap<TContext>,
+  getChildContext: (props: Object) => TContext
 ): HigherOrderComponent
 ```
 
@@ -557,7 +559,7 @@ Provides context to the component's children. `childContextTypes` is an object o
 
 ### `getContext()`
 
-```js
+```ts
 getContext(
   contextTypes: Object
 ): HigherOrderComponent
@@ -567,7 +569,7 @@ Gets values from context and passes them along as props. Use along with `withCon
 
 ### `lifecycle()`
 
-```js
+```ts
 lifecycle(
   spec: Object,
 ): HigherOrderComponent
@@ -578,7 +580,7 @@ A higher-order component version of [`React.Component()`](https://facebook.githu
 Any state changes made in a lifecycle method, by using `setState`, will be propagated to the wrapped component as props.
 
 Example:
-```js
+```ts
 const PostsList = ({ posts }) => (
   <ul>{posts.map(p => <li>{p.title}</li>)}</ul>
 )
@@ -594,7 +596,7 @@ const PostsListWithData = lifecycle({
 
 ### `toClass()`
 
-```js
+```ts
 toClass: HigherOrderComponent
 ```
 
@@ -605,7 +607,7 @@ If the base component is already a class, it returns the given component.
 
 ### `toRenderProps()`
 
-```js
+```ts
 toRenderProps(
   hoc: HigherOrderComponent
 ): ReactFunctionalComponent
@@ -614,7 +616,7 @@ toRenderProps(
 Creates a component that accepts a function as a children with the high-order component applied to it. 
 
 Example:
-```js
+```ts
 const enhance = withProps(({ foo }) => ({ fooPlusOne: foo + 1 }))
 const Enhanced = toRenderProps(enhance)
 
@@ -624,7 +626,7 @@ const Enhanced = toRenderProps(enhance)
 
 ### `fromRenderProps()`
 
-```js
+```ts
 fromRenderProps(
   RenderPropsComponent: ReactClass | ReactFunctionalComponent,
   propsMapper: (...props: any[]) => Object,
@@ -638,7 +640,7 @@ The default value of third parameter (`renderPropName`) is `children`. You can u
 
 > Check the official documents [Render Props](https://reactjs.org/docs/render-props.html#using-props-other-than-render) for more details.
 
-```js
+```ts
 import { fromRenderProps } from 'recompose';
 const { Consumer: ThemeConsumer } = React.createContext({ theme: 'dark' });
 const { Consumer: I18NConsumer } = React.createContext({ i18n: 'en' });
@@ -676,7 +678,7 @@ These functions look like higher-order component helpers — they are curried an
 
 ### `setStatic()`
 
-```js
+```ts
 setStatic(
   key: string,
   value: any
@@ -687,7 +689,7 @@ Assigns a value to a static property on the base component.
 
 ### `setPropTypes()`
 
-```js
+```ts
 setPropTypes(
   propTypes: Object
 ): HigherOrderComponent
@@ -697,7 +699,7 @@ Assigns to the `propTypes` property on the base component.
 
 ### `setDisplayName()`
 
-```js
+```ts
 setDisplayName(
   displayName: string
 ): HigherOrderComponent
@@ -711,7 +713,7 @@ Recompose also includes some additional helpers that aren't higher-order compone
 
 ### `compose()`
 
-```js
+```ts
 compose(...functions: Array<Function>): Function
 ```
 
@@ -719,7 +721,7 @@ Use to compose multiple higher-order components into a single higher-order compo
 
 ### `getDisplayName()`
 
-```js
+```ts
 getDisplayName(
   component: ReactClass | ReactFunctionalComponent
 ): string
@@ -729,7 +731,7 @@ Returns the display name of a React component. Falls back to `'Component'`.
 
 ### `wrapDisplayName()`
 
-```js
+```ts
 wrapDisplayName(
   component: ReactClass | ReactFunctionalComponent,
   wrapperName: string
@@ -740,7 +742,7 @@ Returns a wrapped version of a React component's display name. For instance, if 
 
 ### `shallowEqual()`
 
-```js
+```ts
 shallowEqual(a: Object, b: Object): boolean
 ```
 
@@ -748,7 +750,7 @@ Returns true if objects are shallowly equal.
 
 ### `isClassComponent()`
 
-```js
+```ts
 isClassComponent(value: any): boolean
 ```
 
@@ -756,15 +758,16 @@ Returns true if the given value is a React component class.
 
 ### `createSink()`
 
-```js
-createSink(callback: (props: Object) => void): ReactClass
+```ts
+// TProps = the type of props passed to the callback
+createSink<TProps>(callback: (props: TProps) => void): ReactClass
 ```
 
 Creates a component that renders nothing (null) but calls a callback when receiving new props.
 
 ### `componentFromProp()`
 
-```js
+```ts
 componentFromProp(propName: string): ReactFunctionalComponent
 ```
 
@@ -772,7 +775,7 @@ Creates a component that accepts a component as a prop and renders it with the r
 
 Example:
 
-```js
+```ts
 const enhance = defaultProps({ component: 'button' })
 const Button = enhance(componentFromProp('component'))
 
@@ -783,7 +786,7 @@ const Button = enhance(componentFromProp('component'))
 
 ### `nest()`
 
-```js
+```ts
 nest(
   ...Components: Array<ReactClass | ReactFunctionalComponent | string>
 ): ReactClass
@@ -791,7 +794,7 @@ nest(
 
 Composes components by nesting each one inside the previous. For example:
 
-```js
+```ts
 // Given components A, B, and C
 const ABC = nest(A, B, C)
 <ABC pass="through">Child</ABC>
@@ -808,7 +811,7 @@ const ABC = nest(A, B, C)
 
 ### `hoistStatics()`
 
-```js
+```ts
 hoistStatics(
   hoc: HigherOrderComponent,
   blacklist: Object
@@ -821,11 +824,13 @@ Note that this only hoists _non-react_ statics. The following static properties 
 
 You can exclude more static properties by passing them as `blacklist` object:
 
-```js
+```ts
 hoistStatics(EnhancedComponent, { foo: true })(BaseComponent) // Exclude `foo`
 ```
 
 ## Observable utilities
+
+> **Note:** Type signatures in this section use pseudocode notation (e.g., `TStream<T>` for a generic stream type). TypeScript does not support higher-kinded types, so the actual `.d.ts` file uses `any` in place of `TStream<T>`. See `index.d.ts` for exact TypeScript types.
 
 It turns out that much of the React Component API can be expressed in terms of observables:
 
@@ -845,7 +850,7 @@ Other benefits include:
 
 ### `componentFromStream()`
 
-```js
+```ts
 componentFromStream(
   propsToReactNode: (props$: Observable<object>) => Observable<ReactNode>
 ): ReactComponent
@@ -855,7 +860,7 @@ Creates a React component by mapping an observable stream of props to a stream o
 
 You can think of `propsToReactNode` as a function `f` such that
 
-```js
+```ts
 const vdom$ = f(props$)
 ```
 
@@ -867,7 +872,7 @@ v = f(d)
 
 Example:
 
-```js
+```ts
 const Counter = componentFromStream(props$ => {
   const { handler: increment, stream: increment$ } = createEventHandler()
   const { handler: decrement, stream: decrement$ } = createEventHandler()
@@ -892,14 +897,15 @@ const Counter = componentFromStream(props$ => {
 
 ### `componentFromStreamWithConfig()`
 
-```js
-componentFromStreamWithConfig<Stream>(
+```ts
+// TStream = the stream/observable type used by your library (e.g., RxJS Observable, xstream Stream)
+componentFromStreamWithConfig<TStream>(
   config: {
-    fromESObservable<T>: ?(observable: Observable<T>) => Stream<T>,
-    toESObservable<T>: ?(stream: Stream<T>) => Observable<T>,
+    fromESObservable?: <T>(observable: Observable<T>) => TStream<T>,
+    toESObservable?: <T>(stream: TStream<T>) => Observable<T>,
   }
 ) => (
-  propsToReactNode: (props$: Stream<object>) => Stream<ReactNode>
+  propsToReactNode: (props$: TStream<object>) => TStream<ReactNode>
 ): ReactComponent
 ```
 
@@ -909,56 +915,56 @@ Alternative to `componentFromStream()` that accepts an observable config and ret
 
 #### RxJS
 
-```js
+```ts
 import rxjsConfig from 'recompose/rxjsObservableConfig'
 const componentFromStream = componentFromStreamWithConfig(rxjsConfig)
 ```
 
 #### RxJS 4 (legacy)
 
-```js
+```ts
 import rxjs4Config from 'recompose/rxjs4ObservableConfig'
 const componentFromStream = componentFromStreamWithConfig(rxjs4Config)
 ```
 
 #### most
 
-```js
+```ts
 import mostConfig from 'recompose/mostObservableConfig'
 const componentFromStream = componentFromStreamWithConfig(mostConfig)
 ```
 
 #### xstream
 
-```js
+```ts
 import xstreamConfig from 'recompose/xstreamObservableConfig'
 const componentFromStream = componentFromStreamWithConfig(xstreamConfig)
 ```
 
 #### Bacon
 
-```js
+```ts
 import baconConfig from 'recompose/baconObservableConfig'
 const componentFromStream = componentFromStreamWithConfig(baconConfig)
 ```
 
 #### Kefir
 
-```js
+```ts
 import kefirConfig from 'recompose/kefirObservableConfig'
 const componentFromStream = componentFromStreamWithConfig(kefirConfig)
 ```
 
 #### Flyd
 
-```js
+```ts
 import flydConfig from 'recompose/flydObservableConfig'
 const componentFromStream = componentFromStreamWithConfig(flydConfig)
 ```
 
 ### `mapPropsStream()`
 
-```js
+```ts
 mapPropsStream(
   ownerPropsToChildProps: (props$: Observable<object>) => Observable<object>,
   BaseComponent: ReactElementType
@@ -970,21 +976,22 @@ A higher-order component version of `componentFromStream()` — accepts a functi
 You may want to use this version to interoperate with other Recompose higher-order component helpers.
 
 ### `mapPropsStreamWithConfig()`
-```js
-mapPropsStreamWithConfig<Stream>(
+```ts
+// TStream = the stream/observable type used by your library
+mapPropsStreamWithConfig<TStream>(
   config: {
-    fromESObservable<T>: ?(observable: Observable<T>) => Stream<T>,
-    toESObservable<T>: ?(stream: Stream<T>) => Observable<T>,
+    fromESObservable?: <T>(observable: Observable<T>) => TStream<T>,
+    toESObservable?: <T>(stream: TStream<T>) => Observable<T>,
   },
 ) => (
-  ownerPropsToChildProps: (props$: Stream<object>) => Stream<object>,
+  ownerPropsToChildProps: (props$: TStream<object>) => TStream<object>,
   BaseComponent: ReactElementType
 ): ReactComponent
 ```
 
 Alternative to `mapPropsStream()` that accepts a observable config and returns a customized `mapPropsStream()` that uses the specified observable library. See `componentFromStreamWithConfig()` above.
 
-```js
+```ts
 const enhance = mapPropsStream(props$ => {
   const timeElapsed$ = Observable.interval(1000)
   return props$.combineLatest(timeElapsed$, (props, timeElapsed) => ({
@@ -1000,25 +1007,28 @@ const Timer = enhance(({ timeElapsed }) =>
 
 ### `createEventHandler()`
 
-```js
-createEventHandler<T>(): {
-  handler: (value: T) => void,
-  stream: Observable<T>
+```ts
+// TValue = the type of values pushed through the handler/stream
+createEventHandler<TValue>(): {
+  handler: (value: TValue) => void,
+  stream: Observable<TValue>
 }
 ```
 
 Returns an object with properties `handler` and `stream`. `stream` is an observable sequence, and `handler` is a function that pushes new values onto the sequence. Useful for creating event handlers like `onClick`.
 
 ### `createEventHandlerWithConfig()`
-```js
-createEventHandlerWithConfig<T>(
+```ts
+// TStream = the stream/observable type used by your library
+// TValue = the type of values pushed through the handler/stream
+createEventHandlerWithConfig<TStream>(
   config: {
-    fromESObservable<T>: ?(observable: Observable<T>) => Stream<T>,
-    toESObservable<T>: ?(stream: Stream<T>) => Observable<T>,
+    fromESObservable?: <T>(observable: Observable<T>) => TStream<T>,
+    toESObservable?: <T>(stream: TStream<T>) => Observable<T>,
   }
-) => (): {
-  handler: (value: T) => void,
-  stream: Observable<T>
+) => <TValue>(): {
+  handler: (value: TValue) => void,
+  stream: TStream<TValue>
 }
 ```
 
@@ -1026,10 +1036,11 @@ Alternative to `createEventHandler()` that accepts an observable config and retu
 
 ### `setObservableConfig()`
 
-```js
-setObservableConfig<Stream>({
-  fromESObservable<T>: ?(observable: Observable<T>) => Stream<T>,
-  toESObservable<T>: ?(stream: Stream<T>) => Observable<T>
+```ts
+// TStream = the stream/observable type used by your library
+setObservableConfig<TStream>({
+  fromESObservable?: <T>(observable: Observable<T>) => TStream<T>,
+  toESObservable?: <T>(stream: TStream<T>) => Observable<T>
 })
 ```
 
@@ -1037,7 +1048,7 @@ setObservableConfig<Stream>({
 
 Observables in Recompose are plain objects that conform to the [ES Observable proposal](https://github.com/zenparsing/es-observable). Usually, you'll want to use them alongside an observable library like RxJS so that you have access to its suite of operators. By default, this requires you to convert the observables provided by Recompose before applying any transforms:
 
-```js
+```ts
 mapPropsStream(props$ => {
   const rxjsProps$ = Rx.Observable.from(props$)
   // ...now you can use map, filter, scan, etc.
@@ -1047,7 +1058,7 @@ mapPropsStream(props$ => {
 
 This quickly becomes tedious. Rather than performing this transform for each stream individually, `setObservableConfig()` sets a global observable transform that is applied automatically.
 
-```js
+```ts
 import Rx from 'rxjs'
 import { setObservableConfig } from 'recompose'
 
@@ -1065,49 +1076,49 @@ Fortunately, you likely don't need to worry about how to configure Recompose for
 
 #### RxJS
 
-```js
+```ts
 import rxjsconfig from 'recompose/rxjsObservableConfig'
 setObservableConfig(rxjsconfig)
 ```
 
 #### RxJS 4 (legacy)
 
-```js
+```ts
 import rxjs4config from 'recompose/rxjs4ObservableConfig'
 setObservableConfig(rxjs4config)
 ```
 
 #### most
 
-```js
+```ts
 import mostConfig from 'recompose/mostObservableConfig'
 setObservableConfig(mostConfig)
 ```
 
 #### xstream
 
-```js
+```ts
 import xstreamConfig from 'recompose/xstreamObservableConfig'
 setObservableConfig(xstreamConfig)
 ```
 
 #### Bacon
 
-```js
+```ts
 import baconConfig from 'recompose/baconObservableConfig'
 setObservableConfig(baconConfig)
 ```
 
 #### Kefir
 
-```js
+```ts
 import kefirConfig from 'recompose/kefirObservableConfig'
 setObservableConfig(kefirConfig)
 ```
 
 #### Flyd
 
-```js
+```ts
 import flydConfig from 'recompose/flydObservableConfig'
 setObservableConfig(flydConfig)
 ```
