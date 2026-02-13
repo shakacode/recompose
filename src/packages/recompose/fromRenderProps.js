@@ -7,13 +7,13 @@ const fromRenderProps = (
   propsMapper,
   renderPropName = 'children'
 ) => BaseComponent => {
-  const baseFactory = React.createFactory(BaseComponent)
-  const renderPropsFactory = React.createFactory(RenderPropsComponent)
-
   const FromRenderProps = ownerProps =>
-    renderPropsFactory({
+    React.createElement(RenderPropsComponent, {
       [renderPropName]: (...props) =>
-        baseFactory({ ...ownerProps, ...propsMapper(...props) }),
+        React.createElement(BaseComponent, {
+          ...ownerProps,
+          ...propsMapper(...props),
+        }),
     })
 
   if (process.env.NODE_ENV !== 'production') {

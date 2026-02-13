@@ -1,11 +1,9 @@
 /* eslint-disable no-console */
-import { createFactory, Component } from 'react'
+import { createElement, Component } from 'react'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
 
 const lifecycle = spec => BaseComponent => {
-  const factory = createFactory(BaseComponent)
-
   if (process.env.NODE_ENV !== 'production' && spec.hasOwnProperty('render')) {
     console.error(
       'lifecycle() does not support the render method; its behavior is to ' +
@@ -15,7 +13,7 @@ const lifecycle = spec => BaseComponent => {
 
   class Lifecycle extends Component {
     render() {
-      return factory({
+      return createElement(BaseComponent, {
         ...this.props,
         ...this.state,
       })

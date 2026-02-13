@@ -1,11 +1,10 @@
-import { createFactory } from 'react'
+import { createElement } from 'react'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
 
 const flattenProp = propName => BaseComponent => {
-  const factory = createFactory(BaseComponent)
   const FlattenProp = props =>
-    factory({
+    createElement(BaseComponent, {
       ...props,
       ...props[propName],
     })

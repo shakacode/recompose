@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render } from '@testing-library/react'
 import { Observable } from 'rxjs'
 import { Stream as MostStream } from 'most'
 import mostConfig from '../mostObservableConfig'
@@ -9,23 +9,15 @@ import { componentFromStreamWithConfig } from '../componentFromStream'
 test('componentFromStreamWithConfig creates a stream with the correct stream type.', () => {
   const MostComponent = componentFromStreamWithConfig(mostConfig)(props$ => {
     expect(props$ instanceof MostStream).toBe(true)
-    return props$.map(v =>
-      <div>
-        {String(v)}
-      </div>
-    )
+    return props$.map(v => <div>{String(v)}</div>)
   })
 
-  mount(<MostComponent />)
+  render(<MostComponent />)
 
   const RXJSComponent = componentFromStreamWithConfig(rxjsConfig)(props$ => {
     expect(props$ instanceof Observable).toBe(true)
-    return props$.map(v =>
-      <div>
-        {String(v)}
-      </div>
-    )
+    return props$.map(v => <div>{String(v)}</div>)
   })
 
-  mount(<RXJSComponent />)
+  render(<RXJSComponent />)
 })

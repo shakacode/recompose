@@ -14,11 +14,11 @@ const config = {
   toESObservable: stream => ({
     subscribe: observer => {
       const unsubscribe = stream.subscribe(event => {
-        if (event.hasValue()) {
+        if (observer.next && event.hasValue()) {
           observer.next(event.value())
-        } else if (event.isError()) {
+        } else if (observer.error && event.isError()) {
           observer.error(event.error)
-        } else if (event.isEnd()) {
+        } else if (observer.complete && event.isEnd()) {
           observer.complete()
         }
       })

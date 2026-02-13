@@ -1,10 +1,9 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import { render, act } from '@testing-library/react'
 import { onlyUpdateForKeys, compose, withState } from '../'
 
 test('onlyUpdateForKeys implements shouldComponentUpdate()', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = compose(
@@ -17,18 +16,22 @@ test('onlyUpdateForKeys implements shouldComponentUpdate()', () => {
     'withState(withState(onlyUpdateForKeys(component)))'
   )
 
-  mount(<Counter />)
-  const { updateCounter, updateFoobar } = component.firstCall.args[0]
+  render(<Counter />)
+  const { updateCounter, updateFoobar } = component.mock.calls[0][0]
 
-  expect(component.lastCall.args[0].counter).toBe(0)
-  expect(component.lastCall.args[0].foobar).toBe('foobar')
+  expect(component.mock.lastCall[0].counter).toBe(0)
+  expect(component.mock.lastCall[0].foobar).toBe('foobar')
 
   // Does not update
-  updateFoobar('barbaz')
-  expect(component.calledOnce).toBe(true)
+  act(() => {
+    updateFoobar('barbaz')
+  })
+  expect(component.mock.calls.length).toBe(1)
 
-  updateCounter(42)
-  expect(component.calledTwice).toBe(true)
-  expect(component.lastCall.args[0].counter).toBe(42)
-  expect(component.lastCall.args[0].foobar).toBe('barbaz')
+  act(() => {
+    updateCounter(42)
+  })
+  expect(component.mock.calls.length).toBe(2)
+  expect(component.mock.lastCall[0].counter).toBe(42)
+  expect(component.mock.lastCall[0].foobar).toBe('barbaz')
 })

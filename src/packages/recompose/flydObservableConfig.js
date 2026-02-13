@@ -19,7 +19,7 @@ const config = {
   toESObservable: stream => ({
     subscribe: observer => {
       const sub = flyd.on(observer.next || noop, stream)
-      flyd.on(_ => observer.complete(), sub.end)
+      flyd.on(_ => observer.complete && observer.complete(), sub.end)
       return {
         unsubscribe: () => sub.end(true),
       }

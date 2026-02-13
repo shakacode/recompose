@@ -1,17 +1,18 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render } from '@testing-library/react'
 import { lifecycle } from '../'
 
 test('lifecycle is a higher-order component version of React.Component', () => {
   const enhance = lifecycle({
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
       this.setState({ 'data-bar': 'baz' })
     },
   })
   const Div = enhance('div')
   expect(Div.displayName).toBe('lifecycle(div)')
 
-  const div = mount(<Div data-foo="bar" />).find('div')
-  expect(div.prop('data-foo')).toBe('bar')
-  expect(div.prop('data-bar')).toBe('baz')
+  const { container } = render(<Div data-foo="bar" />)
+  const div = container.querySelector('div')
+  expect(div.getAttribute('data-foo')).toBe('bar')
+  expect(div.getAttribute('data-bar')).toBe('baz')
 })

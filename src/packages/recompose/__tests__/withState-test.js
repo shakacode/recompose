@@ -1,59 +1,66 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
-
+import { render, act } from '@testing-library/react'
 import { withState } from '../'
 
 test('withState adds a stateful value and a function for updating it', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withState('counter', 'updateCounter', 0)(component)
   expect(Counter.displayName).toBe('withState(component)')
 
-  mount(<Counter pass="through" />)
-  const { updateCounter } = component.firstCall.args[0]
+  render(<Counter pass="through" />)
+  const { updateCounter } = component.mock.calls[0][0]
 
-  expect(component.lastCall.args[0].counter).toBe(0)
-  expect(component.lastCall.args[0].pass).toBe('through')
+  expect(component.mock.lastCall[0].counter).toBe(0)
+  expect(component.mock.lastCall[0].pass).toBe('through')
 
-  updateCounter(n => n + 9)
-  updateCounter(n => n * 2)
+  act(() => {
+    updateCounter(n => n + 9)
+  })
+  act(() => {
+    updateCounter(n => n * 2)
+  })
 
-  expect(component.lastCall.args[0].counter).toBe(18)
-  expect(component.lastCall.args[0].pass).toBe('through')
+  expect(component.mock.lastCall[0].counter).toBe(18)
+  expect(component.mock.lastCall[0].pass).toBe('through')
 })
 
 test('withState also accepts a non-function, which is passed directly to setState()', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withState('counter', 'updateCounter', 0)(component)
-  mount(<Counter />)
-  const { updateCounter } = component.firstCall.args[0]
+  render(<Counter />)
+  const { updateCounter } = component.mock.calls[0][0]
 
-  updateCounter(18)
-  expect(component.lastCall.args[0].counter).toBe(18)
+  act(() => {
+    updateCounter(18)
+  })
+  expect(component.mock.lastCall[0].counter).toBe(18)
 })
 
 test('withState accepts setState() callback', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withState('counter', 'updateCounter', 0)(component)
-  mount(<Counter />)
-  const { updateCounter } = component.firstCall.args[0]
+  render(<Counter />)
+  const { updateCounter } = component.mock.calls[0][0]
 
-  const renderSpy = sinon.spy(() => {
-    expect(component.lastCall.args[0].counter).toBe(18)
+  const callback = jest.fn(() => {
+    expect(component.mock.lastCall[0].counter).toBe(18)
   })
 
-  expect(component.lastCall.args[0].counter).toBe(0)
-  updateCounter(18, renderSpy)
+  expect(component.mock.lastCall[0].counter).toBe(0)
+  act(() => {
+    updateCounter(18, callback)
+  })
+  expect(callback).toHaveBeenCalledTimes(1)
 })
 
 test('withState also accepts initialState as function of props', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withState(
@@ -62,10 +69,12 @@ test('withState also accepts initialState as function of props', () => {
     props => props.initialCounter
   )(component)
 
-  mount(<Counter initialCounter={1} />)
-  const { updateCounter } = component.firstCall.args[0]
+  render(<Counter initialCounter={1} />)
+  const { updateCounter } = component.mock.calls[0][0]
 
-  expect(component.lastCall.args[0].counter).toBe(1)
-  updateCounter(n => n * 3)
-  expect(component.lastCall.args[0].counter).toBe(3)
+  expect(component.mock.lastCall[0].counter).toBe(1)
+  act(() => {
+    updateCounter(n => n * 3)
+  })
+  expect(component.mock.lastCall[0].counter).toBe(3)
 })

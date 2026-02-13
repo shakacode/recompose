@@ -1,4 +1,4 @@
-import { createFactory, Component } from 'react'
+import { createElement, Component } from 'react'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
 
@@ -7,7 +7,6 @@ const withState = (
   stateUpdaterName,
   initialState
 ) => BaseComponent => {
-  const factory = createFactory(BaseComponent)
   class WithState extends Component {
     state = {
       stateValue:
@@ -26,7 +25,7 @@ const withState = (
       )
 
     render() {
-      return factory({
+      return createElement(BaseComponent, {
         ...this.props,
         [stateName]: this.state.stateValue,
         [stateUpdaterName]: this.updateStateValue,

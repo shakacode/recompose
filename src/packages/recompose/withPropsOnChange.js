@@ -1,12 +1,10 @@
-import { createFactory, Component } from 'react'
-import { polyfill } from 'react-lifecycles-compat'
+import { createElement, Component } from 'react'
 import pick from './utils/pick'
 import shallowEqual from './shallowEqual'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
 
 const withPropsOnChange = (shouldMapOrKeys, propsMapper) => BaseComponent => {
-  const factory = createFactory(BaseComponent)
   const shouldMap =
     typeof shouldMapOrKeys === 'function'
       ? shouldMapOrKeys
@@ -36,14 +34,12 @@ const withPropsOnChange = (shouldMapOrKeys, propsMapper) => BaseComponent => {
     }
 
     render() {
-      return factory({
+      return createElement(BaseComponent, {
         ...this.props,
         ...this.state.computedProps,
       })
     }
   }
-
-  polyfill(WithPropsOnChange)
 
   if (process.env.NODE_ENV !== 'production') {
     return setDisplayName(wrapDisplayName(BaseComponent, 'withPropsOnChange'))(

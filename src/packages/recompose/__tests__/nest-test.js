@@ -1,5 +1,5 @@
 import React from 'react'
-import { shallow } from 'enzyme'
+import { render } from '@testing-library/react'
 import { nest, setDisplayName, toClass } from '../'
 
 test('nest nests components from outer to inner', () => {
@@ -11,15 +11,12 @@ test('nest nests components from outer to inner', () => {
 
   expect(Nest.displayName).toBe('nest(A, B, C)')
 
-  const wrapper = shallow(<Nest pass="through">Child</Nest>)
-
-  expect(
-    wrapper.equals(
-      <A pass="through">
-        <B pass="through">
-          <C pass="through">Child</C>
-        </B>
-      </A>
-    )
-  ).toBe(true)
+  const { container } = render(<Nest pass="through">Child</Nest>)
+  // nest(A,B,C) creates nested divs, all with pass="through"
+  const divs = container.querySelectorAll('div')
+  expect(divs.length).toBe(3)
+  divs.forEach(div => {
+    expect(div.getAttribute('pass')).toBe('through')
+  })
+  expect(container.textContent).toBe('Child')
 })

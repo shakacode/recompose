@@ -14,9 +14,7 @@
     "node": true,
     "jest": true
   },
-  "globals": {
-    "sinon": true
-  },
+  "globals": {},
   "rules": {
     "semi": [2, "never"],
     "no-use-before-define": ["error", { "functions": false }],
@@ -42,7 +40,7 @@
     "react/no-multi-comp": [0],
     "react/sort-comp": [0],
     "react/jsx-filename-extension": [0],
-    "prettier/prettier": ["error", {"semi": false, "trailingComma": "es5", "singleQuote": true}],
+    "prettier/prettier": "error",
     "react/destructuring-assignment": [0],
     "react/jsx-curly-brace-presence": [0],
     "react/no-unused-prop-types": [0],

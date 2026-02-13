@@ -1,8 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
-import { toClass, withContext, compose } from '../'
+import { render } from '@testing-library/react'
+import { toClass, withContext, getContext, compose } from '../'
 
 test('toClass returns the base component if it is already a class', () => {
   class BaseComponent extends React.Component {
@@ -15,35 +14,32 @@ test('toClass returns the base component if it is already a class', () => {
   expect(TestComponent).toBe(BaseComponent)
 })
 
-test('toClass copies propTypes, displayName, contextTypes and defaultProps from base component', () => {
+test('toClass copies propTypes, displayName and defaultProps from base component', () => {
   const StatelessComponent = () => <div />
 
   StatelessComponent.displayName = 'Stateless'
   StatelessComponent.propTypes = { foo: PropTypes.string }
-  StatelessComponent.contextTypes = { bar: PropTypes.object }
   StatelessComponent.defaultProps = { foo: 'bar', fizz: 'buzz' }
 
   const TestComponent = toClass(StatelessComponent)
 
   expect(TestComponent.displayName).toBe('Stateless')
   expect(TestComponent.propTypes).toEqual({ foo: PropTypes.string })
-  expect(TestComponent.contextTypes).toEqual({ bar: PropTypes.object })
   expect(TestComponent.defaultProps).toEqual({ foo: 'bar', fizz: 'buzz' })
 })
 
 test('toClass passes defaultProps correctly', () => {
-  const StatelessComponent = sinon.spy(() => null)
+  const StatelessComponent = jest.fn(() => null)
 
   StatelessComponent.displayName = 'Stateless'
   StatelessComponent.propTypes = { foo: PropTypes.string }
-  StatelessComponent.contextTypes = { bar: PropTypes.object }
   StatelessComponent.defaultProps = { foo: 'bar', fizz: 'buzz' }
 
   const TestComponent = toClass(StatelessComponent)
 
-  mount(<TestComponent />)
-  expect(StatelessComponent.lastCall.args[0].foo).toBe('bar')
-  expect(StatelessComponent.lastCall.args[0].fizz).toBe('buzz')
+  render(<TestComponent />)
+  expect(StatelessComponent.mock.lastCall[0].foo).toBe('bar')
+  expect(StatelessComponent.mock.lastCall[0].fizz).toBe('buzz')
 })
 
 test('toClass passes context and props correctly', () => {
@@ -63,25 +59,31 @@ test('toClass passes context and props correctly', () => {
     withContext({ store: PropTypes.object }, props => ({ store: props.store }))
   )(Provider)
 
-  const StatelessComponent = (props, context) =>
-    <div data-props={props} data-context={context} />
+  const StatelessComponent = props => (
+    <div
+      data-fizz={props.fizz}
+      data-has-store={props.store === store ? 'yes' : 'no'}
+    />
+  )
 
-  StatelessComponent.contextTypes = { store: PropTypes.object }
+  const TestComponent = compose(
+    getContext({ store: PropTypes.object }),
+    toClass
+  )(StatelessComponent)
 
-  const TestComponent = toClass(StatelessComponent)
-
-  const div = mount(
+  const { container } = render(
     <Provider store={store}>
       <TestComponent fizz="fizzbuzz" />
     </Provider>
-  ).find('div')
+  )
 
-  expect(div.prop('data-props').fizz).toBe('fizzbuzz')
-  expect(div.prop('data-context').store).toBe(store)
+  const div = container.querySelector('div')
+  expect(div.getAttribute('data-fizz')).toBe('fizzbuzz')
+  expect(div.getAttribute('data-has-store')).toBe('yes')
 })
 
 test('toClass works with strings (DOM components)', () => {
   const Div = toClass('div')
-  const div = mount(<Div>Hello</Div>)
-  expect(div.html()).toBe('<div>Hello</div>')
+  const { container } = render(<Div>Hello</Div>)
+  expect(container.innerHTML).toBe('<div>Hello</div>')
 })

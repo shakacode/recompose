@@ -1,6 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import { render, fireEvent } from '@testing-library/react'
 import { withHandlers, withState, compose } from '../'
 
 test('withHandlers passes handlers to base component', () => {
@@ -17,30 +16,29 @@ test('withHandlers passes handlers to base component', () => {
     })
   )
 
-  const Form = enhanceForm(({ value, onChange, onSubmit }) =>
+  const Form = enhanceForm(({ value, onChange, onSubmit }) => (
     <form onSubmit={onSubmit}>
       <label>
         Value
         <input type="text" value={value} onChange={onChange} />
       </label>
-      <p>
-        {value}
-      </p>
+      <p>{value}</p>
     </form>
-  )
+  ))
 
-  const wrapper = mount(<Form />)
-  const input = wrapper.find('input')
-  const output = wrapper.find('p')
-  const form = wrapper.find('form')
+  const { container } = render(<Form />)
 
-  input.simulate('change', { target: { value: 'Yay' } })
-  expect(output.text()).toBe('Yay')
+  fireEvent.change(container.querySelector('input'), {
+    target: { value: 'Yay' },
+  })
+  expect(container.querySelector('p').textContent).toBe('Yay')
 
-  input.simulate('change', { target: { value: 'Yay!!' } })
-  expect(output.text()).toBe('Yay!!')
+  fireEvent.change(container.querySelector('input'), {
+    target: { value: 'Yay!!' },
+  })
+  expect(container.querySelector('p').textContent).toBe('Yay!!')
 
-  form.simulate('submit')
+  fireEvent.submit(container.querySelector('form'))
   expect(submittedFormValue).toBe('Yay!!')
 })
 
@@ -48,38 +46,42 @@ test('withHandlers passes immutable handlers', () => {
   const enhance = withHandlers({
     handler: () => () => null,
   })
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   const Div = enhance(component)
 
-  const wrapper = mount(<Div />)
-  wrapper.setProps({ foo: 'bar' })
+  const { rerender } = render(<Div />)
+  rerender(<Div foo="bar" />)
 
-  expect(component.calledTwice).toBe(true)
-  expect(component.firstCall.args[0].handler).toBe(
-    component.secondCall.args[0].handler
+  expect(component.mock.calls.length).toBe(2)
+  expect(component.mock.calls[0][0].handler).toBe(
+    component.mock.calls[1][0].handler
   )
 })
 
 test('withHandlers warns if handler is not a higher-order function', () => {
-  const error = sinon.stub(console, 'error')
+  jest.spyOn(console, 'error').mockImplementation(() => {})
 
   const Button = withHandlers({
     onClick: () => {},
   })('button')
 
-  const wrapper = mount(<Button />)
-  const button = wrapper.find('button')
+  const { container } = render(<Button />)
 
-  expect(() => button.simulate('click')).toThrowError(/undefined/)
+  // React dev mode re-throws errors from event handlers via
+  // invokeGuardedCallbackDev, causing an uncaught error in jsdom.
+  // Suppress it so we can check the console.error warning instead.
+  const onError = event => event.preventDefault()
+  window.addEventListener('error', onError)
 
-  expect(error.firstCall.args[0]).toBe(
+  fireEvent.click(container.querySelector('button'))
+
+  window.removeEventListener('error', onError)
+
+  const errorMessages = console.error.mock.calls.map(call => call[0])
+  expect(errorMessages).toContain(
     'withHandlers(): Expected a map of higher-order functions. Refer to ' +
       'the docs for more info.'
   )
-
-  /* eslint-disable */
-  console.error.restore()
-  /* eslint-enable */
 })
 
 test('withHandlers allow handers to be a factory', () => {
@@ -111,12 +113,12 @@ test('withHandlers allow handers to be a factory', () => {
     return null
   })
 
-  const wrapper = mount(<Component hello={'foo'} />)
-  wrapper.setProps({ hello: 'bar' })
+  const { rerender } = render(<Component hello={'foo'} />)
+  rerender(<Component hello={'bar'} />)
   expect(componentHandlers[0]).toBe(componentHandlers[1])
 
   // check that cache is not shared
-  mount(<Component2 hello={'foo'} />)
+  render(<Component2 hello={'foo'} />)
   expect(componentHandlers[0]).toEqual(componentHandlers2[0])
   expect(componentHandlers[0]).not.toBe(componentHandlers2[0])
 })

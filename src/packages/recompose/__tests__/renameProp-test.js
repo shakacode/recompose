@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render } from '@testing-library/react'
 import { withProps, renameProp, compose } from '../'
 
 test('renameProp renames a single prop', () => {
@@ -10,6 +10,8 @@ test('renameProp renames a single prop', () => {
 
   expect(StringConcat.displayName).toBe('withProps(renameProp(div))')
 
-  const div = mount(<StringConcat />).find('div')
-  expect(div.props()).toEqual({ 'data-do': 123, 'data-la': 456 })
+  const { container } = render(<StringConcat />)
+  const div = container.querySelector('div')
+  expect(div.getAttribute('data-do')).toBe('123')
+  expect(div.getAttribute('data-la')).toBe('456')
 })

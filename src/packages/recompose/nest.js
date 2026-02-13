@@ -1,10 +1,12 @@
-import { createFactory } from 'react'
+import { createElement } from 'react'
 import getDisplayName from './getDisplayName'
 
 const nest = (...Components) => {
-  const factories = Components.map(createFactory)
   const Nest = ({ children, ...props }) =>
-    factories.reduceRight((child, factory) => factory(props, child), children)
+    Components.reduceRight(
+      (child, C) => createElement(C, props, child),
+      children
+    )
 
   if (process.env.NODE_ENV !== 'production') {
     const displayNames = Components.map(getDisplayName)

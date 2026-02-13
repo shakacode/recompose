@@ -1,19 +1,19 @@
-import { createFactory } from 'react'
+import { createElement } from 'react'
 import setDisplayName from './setDisplayName'
 import wrapDisplayName from './wrapDisplayName'
 
 const identity = Component => Component
 
 const branch = (test, left, right = identity) => BaseComponent => {
-  let leftFactory
-  let rightFactory
+  let leftComponent
+  let rightComponent
   const Branch = props => {
     if (test(props)) {
-      leftFactory = leftFactory || createFactory(left(BaseComponent))
-      return leftFactory(props)
+      leftComponent = leftComponent || left(BaseComponent)
+      return createElement(leftComponent, props)
     }
-    rightFactory = rightFactory || createFactory(right(BaseComponent))
-    return rightFactory(props)
+    rightComponent = rightComponent || right(BaseComponent)
+    return createElement(rightComponent, props)
   }
 
   if (process.env.NODE_ENV !== 'production') {

@@ -29,7 +29,8 @@ export const componentFromStreamWithConfig = config => propsToVdom =>
     // Stream of vdom
     vdom$ = config.toESObservable(propsToVdom(this.props$))
 
-    componentWillMount() {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillMount() {
       // Subscribe to child prop changes so we know when to re-render
       this.subscription = this.vdom$.subscribe({
         next: vdom => {
@@ -39,7 +40,8 @@ export const componentFromStreamWithConfig = config => propsToVdom =>
       this.propsEmitter.emit(this.props)
     }
 
-    componentWillReceiveProps(nextProps) {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillReceiveProps(nextProps) {
       // Receive new props from the owner
       this.propsEmitter.emit(nextProps)
     }

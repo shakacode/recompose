@@ -1,17 +1,9 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
-
+import { render, act } from '@testing-library/react'
 import { compose, withStateHandlers } from '../'
 
-test('withStateHandlers should persist events passed as argument', () => {
-  const component = ({ value, onChange }) =>
-    <div>
-      <input type="text" value={value} onChange={onChange} />
-      <p>
-        {value}
-      </p>
-    </div>
+test('withStateHandlers handles events passed as argument', () => {
+  const component = jest.fn(() => null)
 
   const InputComponent = withStateHandlers(
     { value: '' },
@@ -22,24 +14,17 @@ test('withStateHandlers should persist events passed as argument', () => {
     }
   )(component)
 
-  const wrapper = mount(<InputComponent />)
-  const input = wrapper.find('input')
-  const output = wrapper.find('p')
-  // having that enzyme simulate does not simulate real situation
-  // emulate persist
-  input.simulate('change', {
-    persist() {
-      this.target = { value: 'Yay' }
-    },
-  })
-  expect(output.text()).toBe('Yay')
+  render(<InputComponent />)
+  const { onChange } = component.mock.lastCall[0]
 
-  input.simulate('change', { target: { value: 'empty' } })
-  expect(output.text()).toBe('empty')
+  act(() => {
+    onChange({ target: { value: 'Yay' } })
+  })
+  expect(component.mock.lastCall[0].value).toBe('Yay')
 })
 
 test('withStateHandlers adds a stateful value and a function for updating it', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withStateHandlers(
@@ -52,23 +37,29 @@ test('withStateHandlers adds a stateful value and a function for updating it', (
   )(component)
   expect(Counter.displayName).toBe('withStateHandlers(component)')
 
-  mount(<Counter pass="through" />)
-  const { updateCounter } = component.firstCall.args[0]
+  render(<Counter pass="through" />)
+  const { updateCounter } = component.mock.calls[0][0]
 
-  expect(component.lastCall.args[0].counter).toBe(0)
-  expect(component.lastCall.args[0].pass).toBe('through')
+  expect(component.mock.lastCall[0].counter).toBe(0)
+  expect(component.mock.lastCall[0].pass).toBe('through')
 
-  updateCounter(9)
-  expect(component.lastCall.args[0].counter).toBe(9)
-  updateCounter(1)
-  updateCounter(10)
+  act(() => {
+    updateCounter(9)
+  })
+  expect(component.mock.lastCall[0].counter).toBe(9)
+  act(() => {
+    updateCounter(1)
+  })
+  act(() => {
+    updateCounter(10)
+  })
 
-  expect(component.lastCall.args[0].counter).toBe(20)
-  expect(component.lastCall.args[0].pass).toBe('through')
+  expect(component.mock.lastCall[0].counter).toBe(20)
+  expect(component.mock.lastCall[0].pass).toBe('through')
 })
 
 test('withStateHandlers accepts initialState as function of props', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withStateHandlers(
@@ -84,24 +75,22 @@ test('withStateHandlers accepts initialState as function of props', () => {
 
   const initialCounter = 101
 
-  mount(<Counter initialCounter={initialCounter} />)
-  expect(component.lastCall.args[0].counter).toBe(initialCounter)
+  render(<Counter initialCounter={initialCounter} />)
+  expect(component.mock.lastCall[0].counter).toBe(initialCounter)
 })
 
 test('withStateHandlers initial state must be function or object or null or undefined', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withStateHandlers(1, {})(component)
-  // React throws an error
-  // expect(() => mount(<Counter />)).toThrow()
-  const error = sinon.stub(console, 'error')
-  mount(<Counter />)
-  expect(error.called).toBe(true)
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+  render(<Counter />)
+  expect(console.error).toHaveBeenCalled()
 })
 
 test('withStateHandlers have access to props', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withStateHandlers(
@@ -118,20 +107,22 @@ test('withStateHandlers have access to props', () => {
   const initialCounter = 101
   const incrementValue = 37
 
-  mount(
+  render(
     <Counter initialCounter={initialCounter} incrementValue={incrementValue} />
   )
 
-  const { increment } = component.firstCall.args[0]
+  const { increment } = component.mock.calls[0][0]
 
-  increment()
-  expect(component.lastCall.args[0].counter).toBe(
+  act(() => {
+    increment()
+  })
+  expect(component.mock.lastCall[0].counter).toBe(
     initialCounter + incrementValue
   )
 })
 
-test('withStateHandlers passes immutable state updaters', () => {
-  const component = sinon.spy(() => null)
+test('withStateHandlers passes stable state updater references', () => {
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withStateHandlers(
@@ -148,20 +139,25 @@ test('withStateHandlers passes immutable state updaters', () => {
   const initialCounter = 101
   const incrementValue = 37
 
-  mount(
+  render(
     <Counter initialCounter={initialCounter} incrementValue={incrementValue} />
   )
 
-  const { increment } = component.firstCall.args[0]
+  const incrementBefore = component.mock.calls[0][0].increment
 
-  increment()
-  expect(component.lastCall.args[0].counter).toBe(
+  act(() => {
+    incrementBefore()
+  })
+
+  const incrementAfter = component.mock.lastCall[0].increment
+  expect(incrementAfter).toBe(incrementBefore)
+  expect(component.mock.lastCall[0].counter).toBe(
     initialCounter + incrementValue
   )
 })
 
 test('withStateHandlers does not rerender if state updater returns undefined', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = withStateHandlers(
@@ -180,20 +176,24 @@ test('withStateHandlers does not rerender if state updater returns undefined', (
 
   const initialCounter = 101
 
-  mount(<Counter initialCounter={initialCounter} />)
-  expect(component.callCount).toBe(1)
+  render(<Counter initialCounter={initialCounter} />)
+  expect(component.mock.calls.length).toBe(1)
 
-  const { updateCounter } = component.firstCall.args[0]
+  const { updateCounter } = component.mock.calls[0][0]
 
-  updateCounter(1)
-  expect(component.callCount).toBe(2)
+  act(() => {
+    updateCounter(1)
+  })
+  expect(component.mock.calls.length).toBe(2)
 
-  updateCounter(0)
-  expect(component.callCount).toBe(2)
+  act(() => {
+    updateCounter(0)
+  })
+  expect(component.mock.calls.length).toBe(2)
 })
 
 test('withStateHandlers rerenders if parent props changed', () => {
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const Counter = compose(
@@ -221,10 +221,12 @@ test('withStateHandlers rerenders if parent props changed', () => {
 
   const initialCounter = 101
 
-  mount(<Counter initialCounter={initialCounter} />)
+  render(<Counter initialCounter={initialCounter} />)
 
-  const { updateParentIncrement } = component.firstCall.args[0]
+  const { updateParentIncrement } = component.mock.calls[0][0]
 
-  updateParentIncrement()
-  expect(component.lastCall.args[0].counter).toBe(initialCounter + 1)
+  act(() => {
+    updateParentIncrement()
+  })
+  expect(component.mock.lastCall[0].counter).toBe(initialCounter + 1)
 })

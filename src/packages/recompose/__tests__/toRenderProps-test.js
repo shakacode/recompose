@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render } from '@testing-library/react'
 import { toRenderProps, defaultProps } from '../'
 
 test('toRenderProps creates a component from defaultProps HOC', () => {
@@ -8,14 +8,10 @@ test('toRenderProps creates a component from defaultProps HOC', () => {
 
   expect(Enhanced.displayName).toBe('defaultProps(RenderPropsComponent)')
 
-  const h1 = mount(
-    <Enhanced>
-      {({ foo }) =>
-        <h1>
-          {foo}
-        </h1>}
-    </Enhanced>
-  ).find('h1')
+  const { container } = render(
+    <Enhanced>{({ foo }) => <h1>{foo}</h1>}</Enhanced>
+  )
 
-  expect(h1.html()).toBe(`<h1>bar</h1>`)
+  const h1 = container.querySelector('h1')
+  expect(h1.innerHTML).toBe('bar')
 })

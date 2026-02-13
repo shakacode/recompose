@@ -1,11 +1,10 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import { render, act } from '@testing-library/react'
 import { renderComponent, withState, compose, branch } from '../'
 
 test('renderComponent always renders the given component', () => {
-  const componentA = sinon.spy(() => null)
-  const componentB = sinon.spy(() => null)
+  const componentA = jest.fn(() => null)
+  const componentB = jest.fn(() => null)
 
   const Foobar = compose(
     withState('flip', 'updateFlip', false),
@@ -16,13 +15,15 @@ test('renderComponent always renders the given component', () => {
     )
   )(null)
 
-  mount(<Foobar />)
-  const { updateFlip } = componentB.firstCall.args[0]
+  render(<Foobar />)
+  const { updateFlip } = componentB.mock.calls[0][0]
 
-  expect(componentB.calledOnce).toBe(true)
-  expect(componentA.notCalled).toBe(true)
+  expect(componentB.mock.calls.length).toBe(1)
+  expect(componentA.mock.calls.length).toBe(0)
 
-  updateFlip(true)
-  expect(componentB.calledOnce).toBe(true)
-  expect(componentA.calledOnce).toBe(true)
+  act(() => {
+    updateFlip(true)
+  })
+  expect(componentB.mock.calls.length).toBe(1)
+  expect(componentA.mock.calls.length).toBe(1)
 })

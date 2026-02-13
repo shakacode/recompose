@@ -1,8 +1,7 @@
 /* eslint-disable react/require-default-props */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import { render } from '@testing-library/react'
 import { withContext, getContext, compose, mapProps } from '../'
 
 test('withContext + getContext adds to and grabs from context', () => {
@@ -36,18 +35,18 @@ test('withContext + getContext adds to and grabs from context', () => {
       mapProps(props => selector(props.store.getState()))
     )
 
-  const component = sinon.spy(() => null)
+  const component = jest.fn(() => null)
   component.displayName = 'component'
 
   const TodoList = connect(({ todos }) => ({ todos }))(component)
 
   expect(TodoList.displayName).toBe('getContext(mapProps(component))')
 
-  mount(
+  render(
     <Provider store={store}>
       <TodoList />
     </Provider>
   )
 
-  expect(component.lastCall.args[0].todos).toEqual(['eat', 'drink', 'sleep'])
+  expect(component.mock.lastCall[0].todos).toEqual(['eat', 'drink', 'sleep'])
 })

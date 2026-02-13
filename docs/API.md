@@ -550,22 +550,26 @@ const Post = enhance(({ title, content, author }) =>
 ```ts
 // TContext = the type of the provided child context
 withContext<TContext>(
-  childContextTypes: PropTypes.ValidationMap<TContext>,
+  childContextTypes: Record<keyof TContext, unknown>,
   getChildContext: (props: Object) => TContext
 ): HigherOrderComponent
 ```
 
-Provides context to the component's children. `childContextTypes` is an object of React prop types. `getChildContext()` is a function that returns the child context. Use along with `getContext()`.
+Provides context to the component's children. `childContextTypes` is an object whose keys define the context properties to provide. `getChildContext()` is a function that returns the child context values. Use along with `getContext()`.
+
+Note: this uses `React.createContext` internally. The keys of `childContextTypes` are used to create or look up context objects; the values are ignored. This means prop-types validation is no longer performed on context values. Existing code passing `PropTypes.ValidationMap` objects will continue to work.
 
 ### `getContext()`
 
 ```ts
-getContext(
-  contextTypes: Object
+getContext<TContext>(
+  contextTypes: Record<keyof TContext, unknown>
 ): HigherOrderComponent
 ```
 
 Gets values from context and passes them along as props. Use along with `withContext()`.
+
+Note: like `withContext()`, the keys of `contextTypes` determine which context values to consume; the values are ignored.
 
 ### `lifecycle()`
 

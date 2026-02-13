@@ -1,10 +1,9 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import sinon from 'sinon'
+import { render, act } from '@testing-library/react'
 import { createSink, compose, withState, mapProps } from '../'
 
 test('createSink creates a React component that fires a callback when receiving new props', () => {
-  const spy = sinon.spy()
+  const spy = jest.fn()
   const Sink = createSink(spy)
   const Counter = compose(
     withState('counter', 'updateCounter', 0),
@@ -14,17 +13,22 @@ test('createSink creates a React component that fires a callback when receiving 
     }))
   )(Sink)
 
-  mount(
+  render(
     <div>
       <Counter />
     </div>
   )
 
-  const { increment } = spy.lastCall.args[0]
-  const getCounter = () => spy.lastCall.args[0].counter
+  const lastProps = () => spy.mock.lastCall[0]
+  const { increment } = lastProps()
+  const getCounter = () => lastProps().counter
   expect(getCounter()).toBe(0)
-  increment()
+  act(() => {
+    increment()
+  })
   expect(getCounter()).toBe(1)
-  increment()
+  act(() => {
+    increment()
+  })
   expect(getCounter()).toBe(2)
 })

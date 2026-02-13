@@ -14,9 +14,9 @@ const config = {
   toESObservable: rxObservable => ({
     subscribe: observer => {
       const subscription = rxObservable.subscribe(
-        val => observer.next(val),
-        error => observer.error(error),
-        () => observer.complete()
+        val => observer.next && observer.next(val),
+        err => observer.error && observer.error(err),
+        () => observer.complete && observer.complete()
       )
       return { unsubscribe: () => subscription.dispose() }
     },
